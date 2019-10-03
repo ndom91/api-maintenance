@@ -1,19 +1,12 @@
 {
   "verbose": true,
   "ignore": [
-    "node_modules",
-    ".next",
-    "static"
+    "node_modules"
   ],
   "watch": [
-    "libs/*",
+    "lib/*",
     "libs/**/*",
-    "pages/**",
-    "pages/**/*",
-    "src/**",
-    "src/**/*",
-    "server.js",
-    "next.config.js"
+    "server.js"
   ],
   "ext": "js json"
 }

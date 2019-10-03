@@ -4,13 +4,16 @@
   "description": "Newtelco Maintenance API",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Nico Domino <ndomino@newtelco.de>",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
+    "google-auth-library": "^5.3.0",
+    "google-batch": "0.0.8",
+    "google-oauth-jwt": "^0.2.0",
     "googleapis": "^43.0.0"
   },
   "devDependencies": {

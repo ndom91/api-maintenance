@@ -3,12 +3,27 @@ const { google } = require('googleapis')
 var gmail = google.gmail('v1')
 var key = require('./serviceacct.json')
 const app = express()
+const cors = require('cors')
 
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(cors())
 
 // INBOX MAINT LABEL = Label_2565420896079443395
 // FINISHED LABEL = Label_2533604283317145521
+
+var whitelist = ['https://maintenance.newtelco.dev', 'http://maintenance.newtelco.de']
+// var whitelist = ['*']
+var corsOptions = {
+  origin: function (origin, callback) {
+    console.log(origin)
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
 
 var jwtClient = new google.auth.JWT(
   key.client_email,
@@ -28,7 +43,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Newtelco Maintenance API' })
 })
 
-app.get('/inbox', (req, res) => {
+app.get('/inbox', cors(corsOptions), (req, res) => {
   function getHeader (headers, name) {
     let returnValue = ''
     headers.forEach(header => {
@@ -74,7 +89,7 @@ app.get('/inbox', (req, res) => {
 
   gmail.users.messages.list({
     auth: jwtClient,
-    maxResults: 2,
+    maxResults: 5,
     q: '',
     labelIds: ['Label_2565420896079443395'],
     userId: 'fwaleska@newtelco.de'
@@ -97,6 +112,7 @@ app.get('/inbox', (req, res) => {
         // console.log(message)
         const id = message.data.id
         const historyId = message.data.historyId
+        const snippet = message.data.snippet
         // message.raw = response.data.raw
         //        debug(message.historyId);
         if (message.data.payload) {
@@ -104,21 +120,28 @@ app.get('/inbox', (req, res) => {
           const from = getHeader(message.data.payload.headers, 'From')
           const to = getHeader(message.data.payload.headers, 'To')
           const date = getHeader(message.data.payload.headers, 'Date')
+          const email = from.match(/<(.*?)>/)
+          const domain = email[1].replace(/.*@/, '')
+          // https://github.com/EmilTholin/gmail-api-parse-message
+          // https://sigparser.com/developers/email-parsing/gmail-api/
           // var parsedMessage = gmailApiParser(response.data)
           // message.textHtml = parsedMessage.textHtml
           // message.textPlain = parsedMessage.textPlain
           finalResponse.push({
-            ID: id,
-            HistoryID: historyId,
-            Subject: subject,
-            From: from,
-            To: to,
-            Date: date
+            id: id,
+            historyID: historyId,
+            snippet: snippet,
+            subject: subject,
+            from: from,
+            domain: domain,
+            to: to,
+            date: date
           })
         } else {
           finalResponse.push({
-            ID: id,
-            HistoryID: historyId
+            id: id,
+            snippet: snippet,
+            historyID: historyId
           })
         }
       })

@@ -3,11 +3,15 @@ const { google } = require('googleapis')
 const gmail = google.gmail('v1')
 const parseMessage = require('gmail-api-parse-message')
 const sanitizeHtml = require('sanitize-html-react')
+const fetch = require('node-fetch')
 const key = require('./serviceacct.json')
 const app = express()
 const cors = require('cors')
+const bodyParser = require('body-parser')
+const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
 
 app.use(express.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 app.use(express.json())
 app.use(cors())
 
@@ -42,6 +46,58 @@ jwtClient.authorize(function (err, tokens) {
 
 app.get('/', (req, res) => {
   res.json({ message: 'Newtelco Maintenance API' })
+})
+
+app.post('/translate', cors(corsOptions), (req, res) => {
+  const translationClient = new TranslationServiceClient()
+  const text = req.body.q
+  const projectId = 'maintenanceapp-221917'
+  const location = 'global'
+
+  async function translateText () {
+    const request = {
+      parent: translationClient.locationPath(projectId, location),
+      contents: [text],
+      mimeType: 'text/html',
+      sourceLanguageCode: 'ru-RU',
+      targetLanguageCode: 'en-US'
+    }
+
+    const [response] = await translationClient.translateText(request)
+
+    console.log(response)
+    for (const translation of response.translations) {
+      res.json({ translatedText: translation.translatedText })
+    }
+  }
+
+  translateText()
+})
+
+app.post('/inbox/delete', cors(corsOptions), (req, res) => {
+  var gmail = google.gmail({
+    version: 'v1',
+    auth: jwtClient
+  })
+  const mailId = req.body.m
+  gmail.users.messages.modify({
+    userId: 'fwaleska@newtelco.de',
+    id: mailId,
+    requestBody: {
+      removeLabelIds: ['UNREAD']
+    }
+  }, function (err, response) {
+    if (err) {
+      res.json(`Gmail API Error - ${err}`)
+    }
+    console.log(response.status)
+    if (response.status === 200) {
+      res.json({
+        status: 'complete',
+        id: response.data.id
+      })
+    }
+  })
 })
 
 app.get('/inbox', cors(corsOptions), (req, res) => {
@@ -91,7 +147,7 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
   gmail.users.messages.list({
     auth: jwtClient,
     maxResults: 5,
-    q: '',
+    q: 'IS:UNREAD',
     labelIds: ['Label_2565420896079443395'],
     userId: 'fwaleska@newtelco.de'
   }, function (err, response) {

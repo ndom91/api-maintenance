@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Newtelco Maintenance API' })
 })
 
-app.get('/mail', (req, res) => {
+app.get('/inbox', (req, res) => {
   function getHeader (headers, name) {
     let returnValue = ''
     headers.forEach(header => {

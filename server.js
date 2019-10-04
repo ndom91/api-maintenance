@@ -121,8 +121,13 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
           const from = getHeader(message.data.payload.headers, 'From')
           const to = getHeader(message.data.payload.headers, 'To')
           const date = getHeader(message.data.payload.headers, 'Date')
-          const email = from.match(/<(.*?)>/)
-          const domain = email[1].replace(/.*@/, '')
+          let domain
+          if (from.includes('<')) {
+            const email = from.match(/<(.*?)>/)
+            domain = email[1].replace(/.*@/, '')
+          } else {
+            domain = from.substring(from.lastIndexOf('@') + 1)
+          }
           // https://github.com/EmilTholin/gmail-api-parse-message
           // https://sigparser.com/developers/email-parsing/gmail-api/
           const parsedMessage = parseMessage(message.data)
@@ -149,7 +154,7 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
         }
       })
       res.json(finalResponse)
-    }).catch(err => console.error(`API Error + ${err}`))
+    }).catch(err => console.error(`API Error - ${err}`))
   })
 })
 

@@ -1,7 +1,9 @@
 const express = require('express')
 const { google } = require('googleapis')
-var gmail = google.gmail('v1')
-var key = require('./serviceacct.json')
+const gmail = google.gmail('v1')
+const parseMessage = require('gmail-api-parse-message')
+const sanitizeHtml = require('sanitize-html-react')
+const key = require('./serviceacct.json')
 const app = express()
 const cors = require('cors')
 
@@ -16,7 +18,6 @@ var whitelist = ['https://maintenance.newtelco.dev', 'http://maintenance.newtelc
 // var whitelist = ['*']
 var corsOptions = {
   origin: function (origin, callback) {
-    console.log(origin)
     if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true)
     } else {
@@ -124,9 +125,10 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
           const domain = email[1].replace(/.*@/, '')
           // https://github.com/EmilTholin/gmail-api-parse-message
           // https://sigparser.com/developers/email-parsing/gmail-api/
-          // var parsedMessage = gmailApiParser(response.data)
-          // message.textHtml = parsedMessage.textHtml
-          // message.textPlain = parsedMessage.textPlain
+          const parsedMessage = parseMessage(message.data)
+          const textHtml = parsedMessage.textHtml
+          const textPlain = parsedMessage.textPlain
+          const body = textHtml || textPlain
           finalResponse.push({
             id: id,
             historyID: historyId,
@@ -135,7 +137,8 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
             from: from,
             domain: domain,
             to: to,
-            date: date
+            date: date,
+            body: sanitizeHtml(body)
           })
         } else {
           finalResponse.push({

@@ -12,9 +12,11 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "gmail-api-parse-message": "^2.1.0",
     "google-batch": "0.0.8",
     "google-oauth-jwt": "^0.2.0",
-    "googleapis": "^43.0.0"
+    "googleapis": "^43.0.0",
+    "sanitize-html-react": "^1.13.0"
   },
   "devDependencies": {
     "eslint": "^6.5.1",

@@ -65,7 +65,6 @@ app.post('/translate', cors(corsOptions), (req, res) => {
 
     const [response] = await translationClient.translateText(request)
 
-    console.log(response)
     for (const translation of response.translations) {
       res.json({ translatedText: translation.translatedText })
     }
@@ -90,7 +89,6 @@ app.post('/inbox/delete', cors(corsOptions), (req, res) => {
     if (err) {
       res.json(`Gmail API Error - ${err}`)
     }
-    console.log(response.status)
     if (response.status === 200) {
       res.json({
         status: 'complete',
@@ -100,41 +98,41 @@ app.post('/inbox/delete', cors(corsOptions), (req, res) => {
   })
 })
 
-app.get('/inbox', cors(corsOptions), (req, res) => {
-  function getHeader (headers, name) {
-    let returnValue = ''
-    headers.forEach(header => {
-      if (header.name === name) {
-        returnValue = header.value
+function getIndividualMessageDetails (messageId, auth, gmail) {
+  return new Promise((resolve, reject) => {
+    gmail.users.messages.get({
+      auth: auth,
+      userId: 'fwaleska@newtelco.de',
+      id: messageId,
+      format: 'full'
+    }, function (err, response) {
+      if (err) {
+        return resolve(`API Error - ${err}`)
       }
+      resolve(response)
     })
-    return returnValue
-  }
+  })
+}
 
-  function getIndividualMessageDetails (messageInfo, auth, gmail, numberOfMessages) {
-    return new Promise((resolve, reject) => {
-      gmail.users.messages.get({
-        auth: auth,
-        userId: 'fwaleska@newtelco.de',
-        id: messageInfo.id,
-        format: 'full'
-      }, function (err, response) {
-        if (err) {
-          return res.json('API Error')
-        }
-        resolve(response)
-      })
-    })
-  }
+function getHeader (headers, name) {
+  let returnValue = ''
+  headers.forEach(header => {
+    if (header.name === name) {
+      returnValue = header.value
+    }
+  })
+  return returnValue
+}
 
+app.get('/inbox', cors(corsOptions), (req, res) => {
   function getMessageDetails (messages, auth) {
-    var gmail = google.gmail({
+    const gmail = google.gmail({
       version: 'v1'
     })
     const answer = []
     return new Promise((resolve, reject) => {
       for (const newMessage of messages) {
-        const promise = getIndividualMessageDetails(newMessage, auth, gmail, messages.length)
+        const promise = getIndividualMessageDetails(newMessage.id, auth, gmail)
         answer.push(promise)
       }
       Promise.all(answer)
@@ -147,7 +145,7 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
   gmail.users.messages.list({
     auth: jwtClient,
     maxResults: 5,
-    q: 'IS:UNREAD',
+    q: '',
     labelIds: ['Label_2565420896079443395'],
     userId: 'fwaleska@newtelco.de'
   }, function (err, response) {
@@ -214,8 +212,58 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
   })
 })
 
-app.get('/mail/:mailId', (req, res) => {
-  return res.send(`GET HTTP method on mail resource with id ${req.params.mailId}`)
+app.get('/inbox/count', cors(corsOptions), (req, res) => {
+  gmail.users.messages.list({
+    auth: jwtClient,
+    maxResults: 5,
+    q: '',
+    labelIds: ['Label_2565420896079443395'],
+    userId: 'fwaleska@newtelco.de'
+  }, function (err, response) {
+    if (err) {
+      return console.error(err)
+    }
+
+    const messages = response.data.messages
+    if (!messages) {
+      res.json('No unread emails')
+      return
+    }
+    res.json({ count: messages.length })
+  })
+})
+
+app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
+  const mailId = req.params.mailId
+  const gmail = google.gmail({
+    version: 'v1'
+  })
+
+  const promise = getIndividualMessageDetails(mailId, jwtClient, gmail)
+  promise.then(message => {
+    // console.log(data)
+    const parsedMessage = parseMessage(message.data)
+    const textHtml = parsedMessage.textHtml
+    const textPlain = parsedMessage.textPlain
+    const body = textHtml || textPlain
+    if (message.data.payload) {
+      const subject = getHeader(message.data.payload.headers, 'Subject')
+      const from = getHeader(message.data.payload.headers, 'From')
+      const to = getHeader(message.data.payload.headers, 'To')
+      const date = getHeader(message.data.payload.headers, 'Date')
+      return res.send({
+        body: body,
+        subject: subject,
+        from: from,
+        to: to,
+        date: date
+      })
+    } else {
+      return res.send({
+        body: body
+      })
+    }
+  })
 })
 
 app.listen(4100, () => {

@@ -108,11 +108,9 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
     resource: event
   }, function (err, event) {
     if (err) {
-      console.log('There was an error contacting the Calendar service: ' + err)
-      res.json({ statusText: 'failed' })
+      res.json({ statusText: 'failed', error: err })
       return
     }
-    console.log('Event created: %s', event.htmlLink)
     res.json({ statusText: 'OK', status: 200 })
   })
 })

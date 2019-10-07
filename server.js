@@ -1,3 +1,6 @@
+const Base64 = require('js-base64').Base64
+const base64js = require('base64-js')
+const encodeUtf8 = require('encode-utf8')
 const express = require('express')
 const { google } = require('googleapis')
 const gmail = google.gmail('v1')
@@ -233,6 +236,52 @@ app.get('/inbox/count', cors(corsOptions), (req, res) => {
   })
 })
 
+app.post('/mail/send', cors(corsOptions), (req, res) => {
+  const gmail = google.gmail({
+    version: 'v1'
+  })
+  function base64EncodeBody (body) {
+    return base64js.fromByteArray(new Uint8Array(encodeUtf8(body))).match(/.{1,76}/g).join('\r\n') + '\r\n'
+  }
+  function sendMessage (userId, email, callback) {
+    var base64EncodedEmail = Base64.encodeURI(email)
+    var request = gmail.users.messages.send({
+      auth: userId,
+      userId: 'fwaleska@newtelco.de',
+      resource: {
+        raw: base64EncodedEmail
+      }
+    })
+    request.then(data => {
+      callback(data)
+    }).catch(err => console.log(err))
+  }
+  const respond = (data) => {
+    console.log(data)
+    res.json({ response: data })
+  }
+  const body = `<html>${req.body.body}</html>`
+  const subject = req.body.subject
+  const to = req.body.to
+  const from = 'maintenance@newtelco.de'
+
+  const headers = []
+  headers.push('Content-Type: text/html; charset="utf-8"')
+  headers.push('MIME-Version: 1.0')
+  headers.push(`From: ${from}`)
+  headers.push(`To: ${to}`)
+  headers.push(`Subject: ${subject}`)
+  headers.push('Content-Transfer-Encoding: base64\r\n\r\n')
+  const encodedBody = base64EncodeBody(body)
+  console.log(headers)
+
+  const formattedEmail = [...headers, '', encodedBody].join('\r\n')
+
+  sendMessage(jwtClient, formattedEmail, respond)
+
+  // const formattedEmail = formatEmail('maintenance@newtelco.de', to, subject, body)
+})
+
 app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
   const mailId = req.params.mailId
   const gmail = google.gmail({
@@ -249,13 +298,11 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
     if (message.data.payload) {
       const subject = getHeader(message.data.payload.headers, 'Subject')
       const from = getHeader(message.data.payload.headers, 'From')
-      const to = getHeader(message.data.payload.headers, 'To')
       const date = getHeader(message.data.payload.headers, 'Date')
       return res.send({
         body: body,
         subject: subject,
         from: from,
-        to: to,
         date: date
       })
     } else {

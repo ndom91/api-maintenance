@@ -37,7 +37,7 @@ var jwtClient = new google.auth.JWT(
   key.client_email,
   null,
   key.private_key,
-  ['https://mail.google.com/', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.labels'],
+  ['https://mail.google.com/', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.labels', 'https://www.googleapis.com/auth/calendar'],
   'fwaleska@newtelco.de'
 )
 
@@ -89,7 +89,7 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
 
   var event = {
     summary: `Maintenance ${company} CID ${cids}`,
-    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">${maintId}</a>`,
+    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">NT-${maintId}</a>`,
     start: {
       dateTime: startDateTime,
       timeZone: 'Europe/Berlin'

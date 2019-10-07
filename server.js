@@ -76,6 +76,47 @@ app.post('/translate', cors(corsOptions), (req, res) => {
   translateText()
 })
 
+app.post('/calendar/create', cors(corsOptions), (req, res) => {
+  var calendar = google.calendar({
+    version: 'v3'
+  })
+  const company = req.body.company
+  const cids = req.body.cids
+  const supplierCID = req.body.supplierCID
+  const maintId = req.body.maintId
+  const startDateTime = req.body.startDateTime
+  const endDateTime = req.body.endDateTime
+
+  var event = {
+    summary: `Maintenance ${company} CID ${cids}`,
+    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">${maintId}</a>`,
+    start: {
+      dateTime: startDateTime,
+      timeZone: 'Europe/Berlin'
+    },
+    end: {
+      dateTime: endDateTime,
+      timeZone: 'Europe/Berlin'
+    },
+    attendees: [
+      { email: 'service@newtelco.de' }
+    ]
+  }
+  calendar.events.insert({
+    auth: jwtClient,
+    calendarId: 'newtelco.de_hkp98ambbvctcn966gjj3c7dlo@group.calendar.google.com',
+    resource: event
+  }, function (err, event) {
+    if (err) {
+      console.log('There was an error contacting the Calendar service: ' + err)
+      res.json({ statusText: 'failed' })
+      return
+    }
+    console.log('Event created: %s', event.htmlLink)
+    res.json({ statusText: 'OK', status: 200 })
+  })
+})
+
 app.post('/inbox/delete', cors(corsOptions), (req, res) => {
   var gmail = google.gmail({
     version: 'v1',
@@ -273,13 +314,10 @@ app.post('/mail/send', cors(corsOptions), (req, res) => {
   headers.push(`Subject: ${subject}`)
   headers.push('Content-Transfer-Encoding: base64\r\n\r\n')
   const encodedBody = base64EncodeBody(body)
-  console.log(headers)
 
   const formattedEmail = [...headers, '', encodedBody].join('\r\n')
 
   sendMessage(jwtClient, formattedEmail, respond)
-
-  // const formattedEmail = formatEmail('maintenance@newtelco.de', to, subject, body)
 })
 
 app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
@@ -290,7 +328,6 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
 
   const promise = getIndividualMessageDetails(mailId, jwtClient, gmail)
   promise.then(message => {
-    // console.log(data)
     const parsedMessage = parseMessage(message.data)
     const textHtml = parsedMessage.textHtml
     const textPlain = parsedMessage.textPlain

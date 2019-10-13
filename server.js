@@ -1,3 +1,4 @@
+require('dotenv').config()
 const Base64 = require('js-base64').Base64
 const base64js = require('base64-js')
 const encodeUtf8 = require('encode-utf8')
@@ -11,6 +12,8 @@ const key = require('./serviceacct.json')
 const app = express()
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const mysql = require('mysql')
+const algoliasearch = require('algoliasearch')
 const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
 
 app.use(express.urlencoded({ extended: true }))
@@ -50,6 +53,7 @@ jwtClient.authorize(function (err, tokens) {
 app.get('/', (req, res) => {
   res.json({ message: 'Newtelco Maintenance API' })
 })
+
 
 app.post('/translate', cors(corsOptions), (req, res) => {
   const translationClient = new TranslationServiceClient()
@@ -129,7 +133,10 @@ app.post('/inbox/delete', cors(corsOptions), (req, res) => {
     }
   }, function (err, response) {
     if (err) {
-      res.json(`Gmail API Error - ${err}`)
+      res.json({
+        id: 500,
+        status: `Gmail API Error - ${err}`
+      })
     }
     if (response.status === 200) {
       res.json({
@@ -186,8 +193,8 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
 
   gmail.users.messages.list({
     auth: jwtClient,
-    maxResults: 5,
-    q: '',
+    // maxResults: 5,
+    q: 'IS:UNREAD',
     labelIds: ['Label_2565420896079443395'],
     userId: 'fwaleska@newtelco.de'
   }, function (err, response) {
@@ -257,8 +264,8 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
 app.get('/inbox/count', cors(corsOptions), (req, res) => {
   gmail.users.messages.list({
     auth: jwtClient,
-    maxResults: 5,
-    q: '',
+    // maxResults: 5,
+    q: 'IS:UNREAD',
     labelIds: ['Label_2565420896079443395'],
     userId: 'fwaleska@newtelco.de'
   }, function (err, response) {
@@ -309,6 +316,7 @@ app.post('/mail/send', cors(corsOptions), (req, res) => {
   headers.push('MIME-Version: 1.0')
   headers.push(`From: ${from}`)
   headers.push(`To: ${to}`)
+  headers.push('Cc: service@newtelco.de')
   headers.push(`Subject: ${subject}`)
   headers.push('Content-Transfer-Encoding: base64\r\n\r\n')
   const encodedBody = base64EncodeBody(body)
@@ -347,6 +355,37 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
     }
   })
 })
+
+app.get('/search/update', cors(corsOptions), (req, res) => {
+  const connection = mysql.createConnection({
+    host     : process.env.DB_HOST,
+    user     : process.env.DB_USER,
+    password : process.env.DB_PASS,
+    database : process.env.DB_NAME
+  })
+
+  connection.connect()
+
+  connection.query('SELECT id FROM maintenancedb ORDER BY maintenancedb.id DESC LIMIT 1', function (error, results, fields) { 
+    if (error) throw error;
+    // console.log('The solution is: ', results[0].id);
+    const maintId = results[0].id
+    connection.query(`SELECT maintenancedb.id, maintenancedb.maileingang, maintenancedb.lieferant, maintenancedb.receivedmail, maintenancedb.timezone, maintenancedb.timezoneLabel, companies.name, maintenancedb.derenCIDid, lieferantCID.derenCID, maintenancedb.bearbeitetvon, maintenancedb.betroffeneKunden, DATE_FORMAT(maintenancedb.startDateTime, "%Y-%m-%d %H:%i:%S") as startDateTime, DATE_FORMAT(maintenancedb.endDateTime, "%Y-%m-%d %H:%i:%S") as endDateTime, maintenancedb.postponed, maintenancedb.notes, maintenancedb.mailSentAt, maintenancedb.updatedAt, maintenancedb.betroffeneCIDs, maintenancedb.done, maintenancedb.cancelled, companies.mailDomain, maintenancedb.emergency, maintenancedb.reason, maintenancedb.impact, maintenancedb.location FROM maintenancedb LEFT JOIN lieferantCID ON maintenancedb.derenCIDid = lieferantCID.id LEFT JOIN companies ON maintenancedb.lieferant = companies.id WHERE maintenancedb.id = ${maintId}`, function (error, results, fields) {
+
+      // add to algolia search index when new maintenance is created
+      const client = algoliasearch(process.env.ALGOLIA_ID, process.env.ALGOLIA_APIKEY);
+      const index = client.initIndex(process.env.ALGOLIA_INDEX);
+
+      index.addObjects([results[0]], (err, content) => {
+        console.log(err);
+        console.log(content);
+      });
+      connection.end()
+    })
+  });
+
+})
+
 
 app.listen(4100, () => {
   console.log('Server is listening on port 4100')

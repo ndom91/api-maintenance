@@ -1,3 +1,4 @@
 node_modules/
 serviceacct.json
 maintenance.pem
+.env

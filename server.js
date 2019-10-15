@@ -15,6 +15,7 @@ const bodyParser = require('body-parser')
 const mysql = require('mysql')
 const algoliasearch = require('algoliasearch')
 const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
+const fetchFavicon = require('@meltwater/fetch-favicon').fetchFavicon
 
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParser.json())
@@ -53,7 +54,6 @@ jwtClient.authorize(function (err, tokens) {
 app.get('/', (req, res) => {
   res.json({ message: 'Newtelco Maintenance API' })
 })
-
 
 app.post('/translate', cors(corsOptions), (req, res) => {
   const translationClient = new TranslationServiceClient()
@@ -358,34 +358,44 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
 
 app.get('/search/update', cors(corsOptions), (req, res) => {
   const connection = mysql.createConnection({
-    host     : process.env.DB_HOST,
-    user     : process.env.DB_USER,
-    password : process.env.DB_PASS,
-    database : process.env.DB_NAME
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
   })
 
   connection.connect()
 
-  connection.query('SELECT id FROM maintenancedb ORDER BY maintenancedb.id DESC LIMIT 1', function (error, results, fields) { 
-    if (error) throw error;
+  connection.query('SELECT id FROM maintenancedb ORDER BY maintenancedb.id DESC LIMIT 1', function (error, results, fields) {
+    if (error) throw error
     // console.log('The solution is: ', results[0].id);
     const maintId = results[0].id
     connection.query(`SELECT maintenancedb.id, maintenancedb.maileingang, maintenancedb.lieferant, maintenancedb.receivedmail, maintenancedb.timezone, maintenancedb.timezoneLabel, companies.name, maintenancedb.derenCIDid, lieferantCID.derenCID, maintenancedb.bearbeitetvon, maintenancedb.betroffeneKunden, DATE_FORMAT(maintenancedb.startDateTime, "%Y-%m-%d %H:%i:%S") as startDateTime, DATE_FORMAT(maintenancedb.endDateTime, "%Y-%m-%d %H:%i:%S") as endDateTime, maintenancedb.postponed, maintenancedb.notes, maintenancedb.mailSentAt, maintenancedb.updatedAt, maintenancedb.betroffeneCIDs, maintenancedb.done, maintenancedb.cancelled, companies.mailDomain, maintenancedb.emergency, maintenancedb.reason, maintenancedb.impact, maintenancedb.location FROM maintenancedb LEFT JOIN lieferantCID ON maintenancedb.derenCIDid = lieferantCID.id LEFT JOIN companies ON maintenancedb.lieferant = companies.id WHERE maintenancedb.id = ${maintId}`, function (error, results, fields) {
-
       // add to algolia search index when new maintenance is created
-      const client = algoliasearch(process.env.ALGOLIA_ID, process.env.ALGOLIA_APIKEY);
-      const index = client.initIndex(process.env.ALGOLIA_INDEX);
+      if (error) console.error(error)
+      const client = algoliasearch(process.env.ALGOLIA_ID, process.env.ALGOLIA_APIKEY)
+      const index = client.initIndex(process.env.ALGOLIA_INDEX)
 
       index.addObjects([results[0]], (err, content) => {
-        console.log(err);
-        console.log(content);
-      });
+        console.log(err)
+        console.log(content)
+      })
       connection.end()
     })
-  });
-
+  })
 })
 
+app.get('/favicon', cors(corsOptions), (req, res) => {
+  const domain = req.query.d
+  if (domain && domain !== 'newtelco.de') {
+    console.log(domain)
+    fetchFavicon(`https://${domain}`).then(data => {
+      console.log(data)
+      res.json({ icons: data })
+    })
+      .catch(err => console.error(err))
+  }
+})
 
 app.listen(4100, () => {
   console.log('Server is listening on port 4100')

@@ -337,21 +337,55 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
     const parsedMessage = parseMessage(message.data)
     const textHtml = parsedMessage.textHtml
     const textPlain = parsedMessage.textPlain
-    const body = textHtml || textPlain
-    if (message.data.payload) {
-      const subject = getHeader(message.data.payload.headers, 'Subject')
-      const from = getHeader(message.data.payload.headers, 'From')
-      const date = getHeader(message.data.payload.headers, 'Date')
-      return res.send({
-        body: body,
-        subject: subject,
-        from: from,
-        date: date
+    const attachments = parsedMessage.attachments
+    const attachmentsToSend = []
+    if (attachments && attachments.find(el => el.filename.includes('xls'))) {
+      attachments.forEach((attachment, index) => {
+        const request = gmail.users.messages.attachments.get({
+          id: attachment.attachmentId,
+          messageId: mailId,
+          auth: jwtClient,
+          userId: 'fwaleska@newtelco.de'
+        })
+        request.then(attachmentData => {
+          attachmentsToSend.push({ id: index, name: attachment.filename, data: attachmentData.data.data })
+          const body = textHtml || textPlain
+          if (message.data.payload) {
+            const subject = getHeader(message.data.payload.headers, 'Subject')
+            const from = getHeader(message.data.payload.headers, 'From')
+            const date = getHeader(message.data.payload.headers, 'Date')
+            return res.send({
+              body: body,
+              subject: subject,
+              from: from,
+              date: date,
+              attachments: attachmentsToSend
+            })
+          } else {
+            return res.send({
+              body: body
+            })
+          }
+        })
       })
     } else {
-      return res.send({
-        body: body
-      })
+      const body = textHtml || textPlain
+      if (message.data.payload) {
+        const subject = getHeader(message.data.payload.headers, 'Subject')
+        const from = getHeader(message.data.payload.headers, 'From')
+        const date = getHeader(message.data.payload.headers, 'Date')
+        return res.send({
+          body: body,
+          subject: subject,
+          from: from,
+          date: date,
+          attachments: attachmentsToSend
+        })
+      } else {
+        return res.send({
+          body: body
+        })
+      }
     }
   })
 })
@@ -387,10 +421,12 @@ app.get('/search/update', cors(corsOptions), (req, res) => {
 
 app.get('/favicon', cors(corsOptions), (req, res) => {
   const domain = req.query.d
-  if (domain && domain !== 'newtelco.de') {
-    console.log(domain)
+  if (domain) {
+    if (domain === 'newtelco.de' || domain === 'newtelco.com') {
+      const data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+      res.json({ icons: data })
+    }
     fetchFavicon(`https://${domain}`).then(data => {
-      console.log(data)
       res.json({ icons: data })
     })
       .catch(err => console.error(err))

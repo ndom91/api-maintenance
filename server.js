@@ -332,39 +332,64 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
     version: 'v1'
   })
 
+  const attachmentsToSend = []
+
   const promise = getIndividualMessageDetails(mailId, jwtClient, gmail)
   promise.then(message => {
     const parsedMessage = parseMessage(message.data)
     const textHtml = parsedMessage.textHtml
     const textPlain = parsedMessage.textPlain
     const attachments = parsedMessage.attachments
-    const attachmentsToSend = []
     console.log(attachments)
-    const respondToRequest = (i, loopTarget) => {
-      if (i === loopTarget) {
-        const body = textHtml || textPlain
-        if (message.data.payload) {
-          const subject = getHeader(message.data.payload.headers, 'Subject')
-          const from = getHeader(message.data.payload.headers, 'From')
-          const date = getHeader(message.data.payload.headers, 'Date')
-          return res.send({
-            body: body,
-            subject: subject,
-            from: from,
-            date: date,
-            attachments: attachmentsToSend
-          })
-        } else {
-          return res.send({
-            body: body
-          })
-        }
-      }
-    }
+    // const respondToRequest = (i, loopTarget) => {
+    //   if (i === loopTarget) {
+    //     const body = textHtml || textPlain
+    //     if (message.data.payload) {
+    //       const subject = getHeader(message.data.payload.headers, 'Subject')
+    //       const from = getHeader(message.data.payload.headers, 'From')
+    //       const date = getHeader(message.data.payload.headers, 'Date')
+    //       return res.send({
+    //         body: body,
+    //         subject: subject,
+    //         from: from,
+    //         date: date,
+    //         attachments: attachmentsToSend
+    //       })
+    //     } else {
+    //       return res.send({
+    //         body: body
+    //       })
+    //     }
+    //   }
+    // }
     // if (attachments && attachments.find(el => el.filename.includes('xls') || el.filename.includes('pdf'))) {
     if (attachments) {
-      // attachments.forEach((attachment, index) => {
-      const loopTarget = attachments.length - 1
+      // const loopTarget = attachments.length - 1
+      const gatherAttachments = (id, filename, mimType, attachmentData) => {
+        attachmentsToSend.push({ id: id, name: filename, data: attachmentData })
+        console.log(filename, id, attachments.length)
+        if (id === 0) {
+          const body = textHtml || textPlain
+          if (message.data.payload) {
+            const subject = getHeader(message.data.payload.headers, 'Subject')
+            const from = getHeader(message.data.payload.headers, 'From')
+            const date = getHeader(message.data.payload.headers, 'Date')
+            return res.send({
+              body: body,
+              subject: subject,
+              from: from,
+              date: date,
+              attachments: attachmentsToSend
+            })
+          } else {
+            return res.send({
+              body: body
+            })
+          }
+        }
+        // if (i === loopTarget) {
+        // }
+      }
       for (let i = 0, len = attachments.length; i < len; i++) {
         const request = gmail.users.messages.attachments.get({
           id: attachments[i].attachmentId,
@@ -373,29 +398,30 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
           userId: 'fwaleska@newtelco.de'
         })
         request.then(attachmentData => {
-          attachmentsToSend.push({ id: i, name: attachments[i].filename, data: attachmentData.data.data })
-        }).then(() => {
-          if (i === loopTarget) {
-            const body = textHtml || textPlain
-            if (message.data.payload) {
-              const subject = getHeader(message.data.payload.headers, 'Subject')
-              const from = getHeader(message.data.payload.headers, 'From')
-              const date = getHeader(message.data.payload.headers, 'Date')
-              return res.send({
-                body: body,
-                subject: subject,
-                from: from,
-                date: date,
-                attachments: attachmentsToSend
-              })
-            } else {
-              return res.send({
-                body: body
-              })
-            }
-          }
+          gatherAttachments(i, attachments[i].filename, attachments[i].mimeType, attachmentData.data.data)
         })
+        // .then(() => {
+        // if (i === loopTarget) {
+        //   const body = textHtml || textPlain
+        //   if (message.data.payload) {
+        //     const subject = getHeader(message.data.payload.headers, 'Subject')
+        //     const from = getHeader(message.data.payload.headers, 'From')
+        //     const date = getHeader(message.data.payload.headers, 'Date')
+        //     return res.send({
+        //       body: body,
+        //       subject: subject,
+        //       from: from,
+        //       date: date,
+        //       attachments: attachmentsToSend
+        //     })
+        //   } else {
+        //     return res.send({
+        //       body: body
+        //     })
+        //   }
       }
+      //   )
+      // }
     } else {
       const body = textHtml || textPlain
       if (message.data.payload) {

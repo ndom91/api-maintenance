@@ -441,6 +441,14 @@ app.get('/favicon', cors(corsOptions), (req, res) => {
       const data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
       res.json({ icons: data })
     }
+    if (domain === 'hgc.com.hk') {
+      const data = 'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
+      res.json({ icons: data })
+    }
+    if (domain === 'googlemail.com') {
+      const data = 'https://www.google.com/favicon.ico'
+      res.json({ icons: data })
+    }
     fetchFavicon(`https://${domain}`).then(data => {
       res.json({ icons: data })
     })

@@ -25,7 +25,7 @@ app.use(cors())
 // INBOX MAINT LABEL = Label_2565420896079443395
 // FINISHED LABEL = Label_2533604283317145521
 
-var whitelist = ['https://maintenance.newtelco.dev', 'http://maintenance.newtelco.de']
+var whitelist = ['https://maintenance.newtelco.dev', 'https://maintenance.newtelco.de']
 // var whitelist = ['*']
 var corsOptions = {
   origin: function (origin, callback) {
@@ -264,7 +264,6 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
 app.get('/inbox/count', cors(corsOptions), (req, res) => {
   gmail.users.messages.list({
     auth: jwtClient,
-    // maxResults: 5,
     q: 'IS:UNREAD',
     labelIds: ['Label_2565420896079443395'],
     userId: 'fwaleska@newtelco.de'
@@ -340,34 +339,10 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
     const textHtml = parsedMessage.textHtml
     const textPlain = parsedMessage.textPlain
     const attachments = parsedMessage.attachments
-    console.log(attachments)
-    // const respondToRequest = (i, loopTarget) => {
-    //   if (i === loopTarget) {
-    //     const body = textHtml || textPlain
-    //     if (message.data.payload) {
-    //       const subject = getHeader(message.data.payload.headers, 'Subject')
-    //       const from = getHeader(message.data.payload.headers, 'From')
-    //       const date = getHeader(message.data.payload.headers, 'Date')
-    //       return res.send({
-    //         body: body,
-    //         subject: subject,
-    //         from: from,
-    //         date: date,
-    //         attachments: attachmentsToSend
-    //       })
-    //     } else {
-    //       return res.send({
-    //         body: body
-    //       })
-    //     }
-    //   }
-    // }
-    // if (attachments && attachments.find(el => el.filename.includes('xls') || el.filename.includes('pdf'))) {
     if (attachments) {
-      // const loopTarget = attachments.length - 1
-      const gatherAttachments = (id, filename, mimType, attachmentData) => {
-        attachmentsToSend.push({ id: id, name: filename, data: attachmentData })
-        console.log(filename, id, attachments.length)
+      const gatherAttachments = (id, filename, mimeType, attachmentData) => {
+        attachmentsToSend.push({ id: id, name: filename, mime: mimeType, data: attachmentData })
+        console.log(id, filename, mimeType, attachments.length)
         if (id === 0) {
           const body = textHtml || textPlain
           if (message.data.payload) {
@@ -387,8 +362,6 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
             })
           }
         }
-        // if (i === loopTarget) {
-        // }
       }
       for (let i = 0, len = attachments.length; i < len; i++) {
         const request = gmail.users.messages.attachments.get({
@@ -400,28 +373,7 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
         request.then(attachmentData => {
           gatherAttachments(i, attachments[i].filename, attachments[i].mimeType, attachmentData.data.data)
         })
-        // .then(() => {
-        // if (i === loopTarget) {
-        //   const body = textHtml || textPlain
-        //   if (message.data.payload) {
-        //     const subject = getHeader(message.data.payload.headers, 'Subject')
-        //     const from = getHeader(message.data.payload.headers, 'From')
-        //     const date = getHeader(message.data.payload.headers, 'Date')
-        //     return res.send({
-        //       body: body,
-        //       subject: subject,
-        //       from: from,
-        //       date: date,
-        //       attachments: attachmentsToSend
-        //     })
-        //   } else {
-        //     return res.send({
-        //       body: body
-        //     })
-        //   }
       }
-      //   )
-      // }
     } else {
       const body = textHtml || textPlain
       if (message.data.payload) {

@@ -80,6 +80,50 @@ app.post('/translate', cors(corsOptions), (req, res) => {
   translateText()
 })
 
+app.post('/calendar/reschedule', cors(corsOptions), (req, res) => {
+  var calendar = google.calendar({
+    version: 'v3'
+  })
+  const company = req.body.company
+  const cids = req.body.cids
+  const supplierCID = req.body.supplierCID
+  const maintId = req.body.maintId
+
+  const rcounter = req.body.rcounter
+  const calId = req.body.calId
+  const startDateTime = req.body.startDateTime
+  const endDateTime = req.body.endDateTime
+
+  const event = {
+    summary: `NT-${maintId}-${rcounter} - Maintenance ${company} CID ${cids}`,
+    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">NT-${maintId}-${rcounter}</a>`,
+    start: {
+      dateTime: startDateTime,
+      timeZone: 'Europe/Berlin'
+    },
+    end: {
+      dateTime: endDateTime,
+      timeZone: 'Europe/Berlin'
+    },
+    attendees: [
+      { email: 'service@newtelco.de' }
+    ]
+  }
+
+  calendar.events.update({
+    auth: jwtClient,
+    calendarId: 'newtelco.de_hkp98ambbvctcn966gjj3c7dlo@group.calendar.google.com',
+    eventId: calId,
+    resource: event
+  }, function (err, event) {
+    if (err) {
+      res.json({ statusText: 'failed', error: err })
+      return
+    }
+    res.json({ statusText: 'OK', status: 200, id: calId })
+  })
+})
+
 app.post('/calendar/create', cors(corsOptions), (req, res) => {
   var calendar = google.calendar({
     version: 'v3'
@@ -92,7 +136,7 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
   const endDateTime = req.body.endDateTime
 
   var event = {
-    summary: `Maintenance ${company} CID ${cids}`,
+    summary: `NT-${maintId} - Maintenance ${company} CID ${cids}`,
     description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">NT-${maintId}</a>`,
     start: {
       dateTime: startDateTime,
@@ -115,7 +159,36 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
       res.json({ statusText: 'failed', error: err })
       return
     }
-    res.json({ statusText: 'OK', status: 200 })
+    res.json({ statusText: 'OK', status: 200, id: event.data.id })
+  })
+})
+
+app.post('/inbox/markcomplete', cors(corsOptions), (req, res) => {
+  var gmail = google.gmail({
+    version: 'v1',
+    auth: jwtClient
+  })
+  const mailId = req.body.m
+  gmail.users.messages.modify({
+    userId: 'fwaleska@newtelco.de',
+    id: mailId,
+    requestBody: {
+      addLabelIds: ['Label_2533604283317145521'],
+      removeLabelIds: ['Label_2565420896079443395']
+    }
+  }, function (err, response) {
+    if (err) {
+      res.json({
+        id: 500,
+        status: `Gmail API Error - ${err}`
+      })
+    }
+    if (response.status === 200) {
+      res.json({
+        status: 'complete',
+        id: response.data.id
+      })
+    }
   })
 })
 

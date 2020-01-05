@@ -22,9 +22,6 @@ app.use(bodyParser.json())
 app.use(express.json())
 app.use(cors())
 
-// INBOX MAINT LABEL = Label_2565420896079443395
-// FINISHED LABEL = Label_2533604283317145521
-
 var whitelist = ['https://maintenance.newtelco.dev', 'https://maintenance.newtelco.de']
 // var whitelist = ['*']
 var corsOptions = {
@@ -47,7 +44,7 @@ var jwtClient = new google.auth.JWT(
 
 jwtClient.authorize(function (err, tokens) {
   if (err) {
-    console.log(err)
+    console.error(err)
   }
 })
 
@@ -96,7 +93,7 @@ app.post('/calendar/reschedule', cors(corsOptions), (req, res) => {
 
   const event = {
     summary: `NT-${maintId}-${rcounter} - Maintenance ${company} CID ${cids}`,
-    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">NT-${maintId}-${rcounter}</a>`,
+    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.de/maintenance?id=${maintId}">NT-${maintId}-${rcounter}</a>`,
     start: {
       dateTime: startDateTime,
       timeZone: 'Europe/Berlin'
@@ -137,7 +134,7 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
 
   var event = {
     summary: `NT-${maintId} - Maintenance ${company} CID ${cids}`,
-    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.dev/maintenance?id=${maintId}">NT-${maintId}</a>`,
+    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.de/maintenance?id=${maintId}">NT-${maintId}</a>`,
     start: {
       dateTime: startDateTime,
       timeZone: 'Europe/Berlin'
@@ -159,7 +156,7 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
       res.json({ statusText: 'failed', error: err })
       return
     }
-    res.json({ statusText: 'OK', status: 200, id: event.data.id })
+    res.json({ statusText: 'OK', status: 200, id: event.data.id, event: event })
   })
 })
 
@@ -319,7 +316,8 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
             domain: domain,
             to: to,
             date: date,
-            body: sanitizeHtml(body)
+            body: sanitizeHtml(body),
+            faviconUrl: 'https://maintenance.newtelco.de/static/images/generic_company.png'
           })
         } else {
           finalResponse.push({
@@ -372,10 +370,10 @@ app.post('/mail/send', cors(corsOptions), (req, res) => {
     })
     request.then(data => {
       callback(data)
-    }).catch(err => console.log(err))
+    }).catch(err => console.error(err))
   }
   const respond = (data) => {
-    console.log(data)
+    // console.log(data)
     res.json({ response: data })
   }
   const body = `<html>${req.body.body}</html>`
@@ -415,7 +413,6 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
     if (attachments) {
       const gatherAttachments = (id, filename, mimeType, attachmentData) => {
         attachmentsToSend.push({ id: id, name: filename, mime: mimeType, data: attachmentData })
-        console.log(id, filename, mimeType, attachments.length)
         if (id === 0) {
           const body = textHtml || textPlain
           if (message.data.payload) {
@@ -490,8 +487,7 @@ app.get('/search/update', cors(corsOptions), (req, res) => {
       const index = client.initIndex(process.env.ALGOLIA_INDEX)
 
       index.addObjects([results[0]], (err, content) => {
-        console.log(err)
-        console.log(content)
+        console.error(err)
       })
       connection.end()
     })
@@ -508,18 +504,39 @@ app.get('/favicon', cors(corsOptions), (req, res) => {
       domain = 'investors.zayo.com'
     }
     if (domain === 'centurylink.com' || domain === 'level3.com') {
-      domain = 'centurylink.net'
+      const data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
+      res.json({ icons: data })
     }
-    if (domain === 'newtelco.de' || domain === 'newtelco.com') {
+    if (domain.includes('newtelco')) {
       const data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+      res.json({ icons: data })
+    }
+    if (domain === 'teliacompany.com') {
+      const data = 'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
       res.json({ icons: data })
     }
     if (domain === 'hgc.com.hk') {
       const data = 'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
       res.json({ icons: data })
     }
+    if (domain === 'retn.net') {
+      const data = 'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
+      res.json({ icons: data })
+    }
+    if (domain === 't.ht.hr') {
+      const data = 'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
+      res.json({ icons: data })
+    }
+    if (domain === 'benestra.sk') {
+      const data = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png'
+      res.json({ icons: data })
+    }
     if (domain === 'googlemail.com') {
       const data = 'https://www.google.com/favicon.ico'
+      res.json({ icons: data })
+    }
+    if (domain === 'iptp.net') {
+      const data = 'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
       res.json({ icons: data })
     }
     fetchFavicon(`https://${domain}`).then(data => {

@@ -497,52 +497,68 @@ app.get('/search/update', cors(corsOptions), (req, res) => {
 app.get('/favicon', cors(corsOptions), (req, res) => {
   let domain = req.query.d
   if (domain) {
-    if (domain === 'notify.digitalrealty.com') {
-      domain = 'digitalrealty.com'
+    let data
+    switch (domain) {
+      case 'notify.digitalrealty.com':
+        domain = 'digitalrealty.com'
+        fetchFavicon(`https://${domain}`)
+          .then(data => {
+            res.json({ icons: data })
+          })
+          .catch(err => console.error(err))
+        break
+      case 'zayo.com':
+        domain = 'investors.zayo.com'
+        fetchFavicon(`https://${domain}`)
+          .then(data => {
+            res.json({ icons: data })
+          })
+          .catch(err => console.error(err))
+        break
+      case 'centurylink.com':
+        data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
+        res.json({ icons: data })
+        break
+      case 'level3.com':
+        data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
+        res.json({ icons: data })
+        break
+      case '*newtelco*':
+        data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+        res.json({ icons: data })
+        break
+      case 'teliacompany.com':
+        data = 'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
+        res.json({ icons: data })
+        break
+      case 'hgc.com.hk':
+        data = 'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
+        res.json({ icons: data })
+        break
+      case 'retn.net':
+        data = 'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
+        res.json({ icons: data })
+        break
+      case 't.ht.hr':
+        data = 'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
+        res.json({ icons: data })
+        break
+      case 'benestra.sk':
+        data = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png'
+        res.json({ icons: data })
+        break
+      case 'googlemail.com':
+        data = 'https://www.google.com/favicon.ico'
+        res.json({ icons: data })
+        break
+      case 'iptp.net':
+        data = 'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
+        res.json({ icons: data })
+        break
+      default:
+        data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+        res.json({ icons: data })
     }
-    if (domain === 'zayo.com') {
-      domain = 'investors.zayo.com'
-    }
-    if (domain === 'centurylink.com' || domain === 'level3.com') {
-      const data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
-      res.json({ icons: data })
-    }
-    if (domain.includes('newtelco')) {
-      const data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
-      res.json({ icons: data })
-    }
-    if (domain === 'teliacompany.com') {
-      const data = 'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
-      res.json({ icons: data })
-    }
-    if (domain === 'hgc.com.hk') {
-      const data = 'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
-      res.json({ icons: data })
-    }
-    if (domain === 'retn.net') {
-      const data = 'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
-      res.json({ icons: data })
-    }
-    if (domain === 't.ht.hr') {
-      const data = 'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
-      res.json({ icons: data })
-    }
-    if (domain === 'benestra.sk') {
-      const data = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png'
-      res.json({ icons: data })
-    }
-    if (domain === 'googlemail.com') {
-      const data = 'https://www.google.com/favicon.ico'
-      res.json({ icons: data })
-    }
-    if (domain === 'iptp.net') {
-      const data = 'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
-      res.json({ icons: data })
-    }
-    fetchFavicon(`https://${domain}`).then(data => {
-      res.json({ icons: data })
-    })
-      .catch(err => console.error(err))
   }
 })
 

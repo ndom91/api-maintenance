@@ -7,7 +7,6 @@ const { google } = require('googleapis')
 const gmail = google.gmail('v1')
 const parseMessage = require('gmail-api-parse-message')
 const sanitizeHtml = require('sanitize-html-react')
-const fetch = require('node-fetch')
 const key = require('./serviceacct.json')
 const app = express()
 const cors = require('cors')
@@ -16,6 +15,12 @@ const mysql = require('mysql')
 const algoliasearch = require('algoliasearch')
 const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
 const fetchFavicon = require('@meltwater/fetch-favicon').fetchFavicon
+const Sentry = require('@sentry/node');
+
+Sentry.init({
+  dsn: 'https://370d1ef2e2314a448020449c61428c42@sentry.newtelco.dev//4',
+  release: 'newtelco/api-maintenance@' + process.env.npm_package_version
+})
 
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParser.json())

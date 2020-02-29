@@ -30,7 +30,7 @@
     "mysql": "github:mysqljs/mysql",
     "node-fetch": "^2.6.0",
     "sanitize-html-react": "^1.13.0",
-    "snyk": "^1.290.1"
+    "snyk": "^1.290.2"
   },
   "devDependencies": {
     "eslint": "^6.5.1",

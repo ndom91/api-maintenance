@@ -27,7 +27,7 @@ app.use(bodyParser.json())
 app.use(express.json())
 app.use(cors())
 
-var whitelist = ['https://maintenance.newtelco.dev', 'https://maintenance.newtelco.de']
+var whitelist = ['https://maintenance.newtelco.dev', 'https://maintenance.newtelco.de', 'https://maint.newtelco.de', 'https://maint.newtelco.dev']
 // var whitelist = ['*']
 var corsOptions = {
   origin: function (origin, callback) {

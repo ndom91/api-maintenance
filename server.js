@@ -350,11 +350,11 @@ app.get('/v1/api/count', cors(corsOptions), (req, res) => {
     }
 
     const messages = response.data.messages
-    if (!messages) {
-      res.json('No unread emails')
-      return
-    }
-    res.json({ count: messages.length })
+    // if (!messages) {
+    //   res.json({ count: 0})
+    //   return
+    // }
+    res.json({ count: messages ? messages.length : 0 })
   })
 })
 

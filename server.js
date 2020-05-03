@@ -249,7 +249,6 @@ function getHeader (headers, name) {
 }
 
 app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
-  console.log(req.headers)
   function getMessageDetails (messages, auth) {
     const gmail = google.gmail({
       version: 'v1'
@@ -287,14 +286,10 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
     const answer = getMessageDetails(messages, jwtClient)
     answer.then(v => {
       const finalResponse = []
-      // console.log('v', v[0].data)
       v.forEach(message => {
-        // console.log(message)
         const id = message.data.id
         const historyId = message.data.historyId
         const snippet = message.data.snippet
-        // message.raw = response.data.raw
-        //        debug(message.historyId);
         if (message.data.payload) {
           const subject = getHeader(message.data.payload.headers, 'Subject')
           const from = getHeader(message.data.payload.headers, 'From')
@@ -314,6 +309,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
           const textPlain = parsedMessage.textPlain
           const body = textHtml || textPlain
           finalResponse.push({
+            status: 'success',
             id: id,
             historyID: historyId,
             snippet: snippet,
@@ -334,7 +330,10 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
         }
       })
       res.json(finalResponse)
-    }).catch(err => console.error(`API Error - ${err}`))
+    }).catch(err => {
+      console.error(`API Error - ${err}`)
+      res.json({ status: err })
+    })
   })
 })
 
@@ -350,10 +349,6 @@ app.get('/v1/api/count', cors(corsOptions), (req, res) => {
     }
 
     const messages = response.data.messages
-    // if (!messages) {
-    //   res.json({ count: 0})
-    //   return
-    // }
     res.json({ count: messages ? messages.length : 0 })
   })
 })
@@ -379,7 +374,6 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
     }).catch(err => console.error(err))
   }
   const respond = (data) => {
-    // console.log(data)
     res.json({ response: data })
   }
   const body = `<html>${req.body.body}</html>`
@@ -484,7 +478,6 @@ app.get('/v1/api/search/update', cors(corsOptions), (req, res) => {
 
   connection.query('SELECT id FROM maintenancedb ORDER BY maintenancedb.id DESC LIMIT 1', function (error, results, fields) {
     if (error) throw error
-    // console.log('The solution is: ', results[0].id);
     const maintId = results[0].id
     connection.query(`SELECT maintenancedb.id, maintenancedb.maileingang, maintenancedb.lieferant, maintenancedb.receivedmail, maintenancedb.timezone, maintenancedb.timezoneLabel, companies.name, maintenancedb.derenCIDid, lieferantCID.derenCID, maintenancedb.bearbeitetvon, maintenancedb.betroffeneKunden, DATE_FORMAT(maintenancedb.startDateTime, "%Y-%m-%d %H:%i:%S") as startDateTime, DATE_FORMAT(maintenancedb.endDateTime, "%Y-%m-%d %H:%i:%S") as endDateTime, maintenancedb.postponed, maintenancedb.notes, maintenancedb.mailSentAt, maintenancedb.updatedAt, maintenancedb.betroffeneCIDs, maintenancedb.done, maintenancedb.cancelled, companies.mailDomain, maintenancedb.emergency, maintenancedb.reason, maintenancedb.impact, maintenancedb.location FROM maintenancedb LEFT JOIN lieferantCID ON maintenancedb.derenCIDid = lieferantCID.id LEFT JOIN companies ON maintenancedb.lieferant = companies.id WHERE maintenancedb.id = ${maintId}`, function (error, results, fields) {
       // add to algolia search index when new maintenance is created

@@ -319,7 +319,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
             to: to,
             date: date,
             body: sanitizeHtml(body),
-            faviconUrl: 'https://maintenance.newtelco.de/static/images/generic_company.png'
+            faviconUrl: fetchFavicon(`https://${domain}`)
           })
         } else {
           finalResponse.push({

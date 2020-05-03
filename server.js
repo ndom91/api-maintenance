@@ -15,7 +15,7 @@ const mysql = require('mysql')
 const algoliasearch = require('algoliasearch')
 const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
 const fetchFavicon = require('@meltwater/fetch-favicon').fetchFavicon
-const Sentry = require('@sentry/node');
+const Sentry = require('@sentry/node')
 
 Sentry.init({
   dsn: 'https://370d1ef2e2314a448020449c61428c42@sentry.newtelco.dev//4',
@@ -57,7 +57,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Newtelco Maintenance API' })
 })
 
-app.post('/translate', cors(corsOptions), (req, res) => {
+app.post('/v1/api/translate', cors(corsOptions), (req, res) => {
   const translationClient = new TranslationServiceClient()
   const text = req.body.q
   const projectId = 'maintenanceapp-221917'
@@ -82,7 +82,7 @@ app.post('/translate', cors(corsOptions), (req, res) => {
   translateText()
 })
 
-app.post('/calendar/reschedule', cors(corsOptions), (req, res) => {
+app.post('/v1/api/calendar/reschedule', cors(corsOptions), (req, res) => {
   var calendar = google.calendar({
     version: 'v3'
   })
@@ -126,7 +126,7 @@ app.post('/calendar/reschedule', cors(corsOptions), (req, res) => {
   })
 })
 
-app.post('/calendar/create', cors(corsOptions), (req, res) => {
+app.post('/v1/api/calendar/create', cors(corsOptions), (req, res) => {
   var calendar = google.calendar({
     version: 'v3'
   })
@@ -165,7 +165,7 @@ app.post('/calendar/create', cors(corsOptions), (req, res) => {
   })
 })
 
-app.post('/inbox/markcomplete', cors(corsOptions), (req, res) => {
+app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
   var gmail = google.gmail({
     version: 'v1',
     auth: jwtClient
@@ -194,7 +194,7 @@ app.post('/inbox/markcomplete', cors(corsOptions), (req, res) => {
   })
 })
 
-app.post('/inbox/delete', cors(corsOptions), (req, res) => {
+app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
   var gmail = google.gmail({
     version: 'v1',
     auth: jwtClient
@@ -248,7 +248,8 @@ function getHeader (headers, name) {
   return returnValue
 }
 
-app.get('/inbox', cors(corsOptions), (req, res) => {
+app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
+  console.log(req.headers)
   function getMessageDetails (messages, auth) {
     const gmail = google.gmail({
       version: 'v1'
@@ -337,7 +338,7 @@ app.get('/inbox', cors(corsOptions), (req, res) => {
   })
 })
 
-app.get('/inbox/count', cors(corsOptions), (req, res) => {
+app.get('/v1/api/count', cors(corsOptions), (req, res) => {
   gmail.users.messages.list({
     auth: jwtClient,
     q: 'IS:UNREAD',
@@ -357,7 +358,7 @@ app.get('/inbox/count', cors(corsOptions), (req, res) => {
   })
 })
 
-app.post('/mail/send', cors(corsOptions), (req, res) => {
+app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
   const gmail = google.gmail({
     version: 'v1'
   })
@@ -401,7 +402,7 @@ app.post('/mail/send', cors(corsOptions), (req, res) => {
   sendMessage(jwtClient, formattedEmail, respond)
 })
 
-app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
+app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
   const mailId = req.params.mailId
   const gmail = google.gmail({
     version: 'v1'
@@ -471,7 +472,7 @@ app.get('/mail/:mailId', cors(corsOptions), (req, res) => {
   })
 })
 
-app.get('/search/update', cors(corsOptions), (req, res) => {
+app.get('/v1/api/search/update', cors(corsOptions), (req, res) => {
   const connection = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -499,7 +500,7 @@ app.get('/search/update', cors(corsOptions), (req, res) => {
   })
 })
 
-app.get('/favicon', cors(corsOptions), (req, res) => {
+app.get('/v1/api/favicon', cors(corsOptions), (req, res) => {
   let domain = req.query.d
   if (domain) {
     let data
@@ -549,7 +550,7 @@ app.get('/favicon', cors(corsOptions), (req, res) => {
         res.json({ icons: data })
         break
       case 'benestra.sk':
-        data = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png'
+        data = 'http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256'
         res.json({ icons: data })
         break
       case 'googlemail.com':
@@ -558,6 +559,10 @@ app.get('/favicon', cors(corsOptions), (req, res) => {
         break
       case 'iptp.net':
         data = 'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
+        res.json({ icons: data })
+        break
+      case 'epsilontel.com':
+        data = 'https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226'
         res.json({ icons: data })
         break
       default:

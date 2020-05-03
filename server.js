@@ -308,6 +308,9 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
           const textHtml = parsedMessage.textHtml
           const textPlain = parsedMessage.textPlain
           const body = textHtml || textPlain
+          fetchFavicon(`https://${domain}`).then(data => {
+            const faviconUrl = data
+          })
           finalResponse.push({
             status: 'success',
             id: id,
@@ -319,7 +322,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
             to: to,
             date: date,
             body: sanitizeHtml(body),
-            faviconUrl: fetchFavicon(`https://${domain}`)
+            faviconUrl: ''
           })
         } else {
           finalResponse.push({

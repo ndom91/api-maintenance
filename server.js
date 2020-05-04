@@ -195,31 +195,35 @@ app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
 })
 
 app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
-  var gmail = google.gmail({
-    version: 'v1',
-    auth: jwtClient
+  res.json({
+    status: 'complete',
+    id: req.body.m
   })
-  const mailId = req.body.m
-  gmail.users.messages.modify({
-    userId: 'fwaleska@newtelco.de',
-    id: mailId,
-    requestBody: {
-      removeLabelIds: ['UNREAD']
-    }
-  }, function (err, response) {
-    if (err) {
-      res.json({
-        id: 500,
-        status: `Gmail API Error - ${err}`
-      })
-    }
-    if (response.status === 200) {
-      res.json({
-        status: 'complete',
-        id: response.data.id
-      })
-    }
-  })
+  // var gmail = google.gmail({
+  //   version: 'v1',
+  //   auth: jwtClient
+  // })
+  // const mailId = req.body.m
+  // gmail.users.messages.modify({
+  //   userId: 'fwaleska@newtelco.de',
+  //   id: mailId,
+  //   requestBody: {
+  //     removeLabelIds: ['UNREAD']
+  //   }
+  // }, function (err, response) {
+  //   if (err) {
+  //     res.json({
+  //       id: 500,
+  //       status: `Gmail API Error - ${err}`
+  //     })
+  //   }
+  //   if (response.status === 200) {
+  //     res.json({
+  //       status: 'complete',
+  //       id: response.data.id
+  //     })
+  //   }
+  // })
 })
 
 function getIndividualMessageDetails (messageId, auth, gmail) {
@@ -308,9 +312,6 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
           const textHtml = parsedMessage.textHtml
           const textPlain = parsedMessage.textPlain
           const body = textHtml || textPlain
-          fetchFavicon(`https://${domain}`).then(data => {
-            const faviconUrl = data
-          })
           finalResponse.push({
             status: 'success',
             id: id,
@@ -322,7 +323,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
             to: to,
             date: date,
             body: sanitizeHtml(body),
-            faviconUrl: ''
+            faviconUrl: `https://maint.newtelco.dev/v1/api/faviconUrl?d=${domain}`
           })
         } else {
           finalResponse.push({
@@ -496,76 +497,94 @@ app.get('/v1/api/search/update', cors(corsOptions), (req, res) => {
   })
 })
 
-app.get('/v1/api/favicon', cors(corsOptions), (req, res) => {
-  let domain = req.query.d
-  if (domain) {
-    let data
-    switch (domain) {
-      case 'notify.digitalrealty.com':
-        domain = 'digitalrealty.com'
-        fetchFavicon(`https://${domain}`)
-          .then(data => {
-            res.json({ icons: data })
-          })
-          .catch(err => console.error(err))
-        break
-      case 'zayo.com':
-        domain = 'investors.zayo.com'
-        fetchFavicon(`https://${domain}`)
-          .then(data => {
-            res.json({ icons: data })
-          })
-          .catch(err => console.error(err))
-        break
-      case 'centurylink.com':
-        data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
-        res.json({ icons: data })
-        break
-      case 'level3.com':
-        data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
-        res.json({ icons: data })
-        break
-      case '*newtelco*':
-        data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
-        res.json({ icons: data })
-        break
-      case 'teliacompany.com':
-        data = 'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
-        res.json({ icons: data })
-        break
-      case 'hgc.com.hk':
-        data = 'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
-        res.json({ icons: data })
-        break
-      case 'retn.net':
-        data = 'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
-        res.json({ icons: data })
-        break
-      case 't.ht.hr':
-        data = 'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
-        res.json({ icons: data })
-        break
-      case 'benestra.sk':
-        data = 'http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256'
-        res.json({ icons: data })
-        break
-      case 'googlemail.com':
-        data = 'https://www.google.com/favicon.ico'
-        res.json({ icons: data })
-        break
-      case 'iptp.net':
-        data = 'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
-        res.json({ icons: data })
-        break
-      case 'epsilontel.com':
-        data = 'https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226'
-        res.json({ icons: data })
-        break
-      default:
-        data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
-        res.json({ icons: data })
+const domainSwitch = async (domain) => {
+  return new Promise(resolve => {
+    if (domain) {
+      let data
+      switch (domain) {
+        case 'notify.digitalrealty.com':
+          domain = 'digitalrealty.com'
+          fetchFavicon(`https://${domain}`)
+            .then(data => {
+              resolve(data)
+            })
+            .catch(err => console.error(err))
+          break
+        case 'zayo.com':
+          domain = 'investors.zayo.com'
+          fetchFavicon(`https://${domain}`)
+            .then(data => {
+              resolve(data)
+            })
+            .catch(err => console.error(err))
+          break
+        case 'centurylink.com':
+          data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
+          resolve(data)
+          break
+        case 'level3.com':
+          data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
+          resolve(data)
+          break
+        case '*newtelco*':
+          data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+          resolve(data)
+          break
+        case 'teliacompany.com':
+          data = 'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
+          resolve(data)
+          break
+        case 'hgc.com.hk':
+          data = 'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
+          resolve(data)
+          break
+        case 'retn.net':
+          data = 'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
+          resolve(data)
+          break
+        case 't.ht.hr':
+          data = 'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
+          resolve(data)
+          break
+        case 'benestra.sk':
+          data = 'http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256'
+          resolve(data)
+          break
+        case 'googlemail.com':
+          data = 'https://www.google.com/favicon.ico'
+          resolve(data)
+          break
+        case 'iptp.net':
+          data = 'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
+          resolve(data)
+          break
+        case 'epsilontel.com':
+          data = 'https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226'
+          resolve(data)
+          break
+        default:
+          data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+          resolve(data)
+          break
+      }
     }
-  }
+  })
+}
+
+app.get('/v1/api/faviconUrl', cors(corsOptions), (req, res) => {
+  const domain = req.query.d
+  domainSwitch(domain)
+    .then(Url => {
+      res.redirect(Url)
+    })
+})
+
+app.get('/v1/api/favicon', cors(corsOptions), (req, res) => {
+  const domain = req.query.d
+  domainSwitch(domain)
+    .then(Url => {
+      res.json({ icons: Url })
+    })
 })
 
 app.listen(4100, () => {

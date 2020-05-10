@@ -195,35 +195,35 @@ app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
 })
 
 app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
-  res.json({
-    status: 'complete',
-    id: req.body.m
+  // res.json({
+  //   status: 'complete',
+  //   id: req.body.m
+  // })
+  var gmail = google.gmail({
+    version: 'v1',
+    auth: jwtClient
   })
-  // var gmail = google.gmail({
-  //   version: 'v1',
-  //   auth: jwtClient
-  // })
-  // const mailId = req.body.m
-  // gmail.users.messages.modify({
-  //   userId: 'fwaleska@newtelco.de',
-  //   id: mailId,
-  //   requestBody: {
-  //     removeLabelIds: ['UNREAD']
-  //   }
-  // }, function (err, response) {
-  //   if (err) {
-  //     res.json({
-  //       id: 500,
-  //       status: `Gmail API Error - ${err}`
-  //     })
-  //   }
-  //   if (response.status === 200) {
-  //     res.json({
-  //       status: 'complete',
-  //       id: response.data.id
-  //     })
-  //   }
-  // })
+  const mailId = req.body.m
+  gmail.users.messages.modify({
+    userId: 'fwaleska@newtelco.de',
+    id: mailId,
+    requestBody: {
+      removeLabelIds: ['UNREAD']
+    }
+  }, function (err, response) {
+    if (err) {
+      res.json({
+        id: 500,
+        status: `Gmail API Error - ${err}`
+      })
+    }
+    if (response.status === 200) {
+      res.json({
+        status: 'complete',
+        id: response.data.id
+      })
+    }
+  })
 })
 
 function getIndividualMessageDetails (messageId, auth, gmail) {
@@ -283,7 +283,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
 
     const messages = response.data.messages
     if (!messages) {
-      res.json('No unread emails')
+      res.json([])
       return
     }
 
@@ -563,8 +563,12 @@ const domainSwitch = async (domain) => {
           resolve(data)
           break
         default:
-          data = 'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
-          resolve(data)
+          fetchFavicon(`https://${domain}`)
+            .then(data => {
+              console.log(data)
+              resolve(data)
+            })
+            .catch(err => console.error(err))
           break
       }
     }

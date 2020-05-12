@@ -11,6 +11,7 @@ const key = require('./serviceacct.json')
 const app = express()
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const timeout = require('connect-timeout')
 const mysql = require('mysql')
 const algoliasearch = require('algoliasearch')
 const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
@@ -562,10 +563,13 @@ const domainSwitch = async (domain) => {
           data = 'https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226'
           resolve(data)
           break
+        case 'avelacom.ru':
+          data = 'https://media-exp1.licdn.com/dms/image/C560BAQESKSHXXOpnAg/company-logo_200_200/0?e=2159024400&v=beta&t=1huhKyqy63BV_J7h8OiKCed06_Mlb4PRSK95eknXlws'
+          resolve(data)
+          break
         default:
           fetchFavicon(`https://${domain}`)
             .then(data => {
-              console.log(data)
               resolve(data)
             })
             .catch(err => console.error(err))
@@ -575,7 +579,7 @@ const domainSwitch = async (domain) => {
   })
 }
 
-app.get('/v1/api/faviconUrl', cors(corsOptions), (req, res) => {
+app.get('/v1/api/faviconUrl', timeout('5s'), cors(corsOptions), (req, res) => {
   const domain = req.query.d
   domainSwitch(domain)
     .then(Url => {
@@ -583,7 +587,7 @@ app.get('/v1/api/faviconUrl', cors(corsOptions), (req, res) => {
     })
 })
 
-app.get('/v1/api/favicon', cors(corsOptions), (req, res) => {
+app.get('/v1/api/favicon', timeout('5s'), cors(corsOptions), (req, res) => {
   const domain = req.query.d
   domainSwitch(domain)
     .then(Url => {

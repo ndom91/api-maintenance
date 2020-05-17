@@ -64,7 +64,7 @@ app.post('/v1/api/translate', cors(corsOptions), (req, res) => {
   const projectId = 'maintenanceapp-221917'
   const location = 'global'
 
-  async function translateText () {
+  async function translateText() {
     const request = {
       parent: translationClient.locationPath(projectId, location),
       contents: [text],
@@ -227,7 +227,7 @@ app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
   })
 })
 
-function getIndividualMessageDetails (messageId, auth, gmail) {
+function getIndividualMessageDetails(messageId, auth, gmail) {
   return new Promise((resolve, reject) => {
     gmail.users.messages.get({
       auth: auth,
@@ -243,7 +243,7 @@ function getIndividualMessageDetails (messageId, auth, gmail) {
   })
 }
 
-function getHeader (headers, name) {
+function getHeader(headers, name) {
   let returnValue = ''
   headers.forEach(header => {
     if (header.name === name) {
@@ -254,7 +254,7 @@ function getHeader (headers, name) {
 }
 
 app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
-  function getMessageDetails (messages, auth) {
+  function getMessageDetails(messages, auth) {
     const gmail = google.gmail({
       version: 'v1'
     })
@@ -362,10 +362,10 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
   const gmail = google.gmail({
     version: 'v1'
   })
-  function base64EncodeBody (body) {
+  function base64EncodeBody(body) {
     return base64js.fromByteArray(new Uint8Array(encodeUtf8(body))).match(/.{1,76}/g).join('\r\n') + '\r\n'
   }
-  function sendMessage (userId, email, callback) {
+  function sendMessage(userId, email, callback) {
     var base64EncodedEmail = Base64.encodeURI(email)
     var request = gmail.users.messages.send({
       auth: userId,
@@ -474,6 +474,7 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
 app.get('/v1/api/search/update', cors(corsOptions), (req, res) => {
   const connection = mysql.createConnection({
     host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME

@@ -19,7 +19,7 @@ const fetchFavicon = require('@meltwater/fetch-favicon').fetchFavicon
 const Sentry = require('@sentry/node')
 
 Sentry.init({
-  dsn: 'https://370d1ef2e2314a448020449c61428c42@sentry.newtelco.dev//4',
+  dsn: process.env.SENTRY_DSN,
   release: 'newtelco/api-maintenance@' + process.env.npm_package_version
 })
 

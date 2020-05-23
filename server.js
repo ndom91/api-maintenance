@@ -573,7 +573,10 @@ const domainSwitch = async (domain) => {
             .then(data => {
               resolve(data)
             })
-            .catch(err => console.error(err))
+            .catch(err => {
+              resolve('https://maint.newtelco.dev/static/images/office-building.png')
+              console.error(err)
+            })
           break
       }
     }

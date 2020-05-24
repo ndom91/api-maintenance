@@ -600,6 +600,6 @@ app.get('/v1/api/favicon', timeout('5s'), cors(corsOptions), (req, res) => {
     })
 })
 
-app.listen(4100, () => {
-  console.log('Server is listening on port 4100')
+app.listen(process.env.PORT || 4100, () => {
+  console.log(`Server is listening on port ${process.env.PORT || 4100}`)
 })

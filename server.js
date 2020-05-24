@@ -64,7 +64,7 @@ app.post('/v1/api/translate', cors(corsOptions), (req, res) => {
   const projectId = 'maintenanceapp-221917'
   const location = 'global'
 
-  async function translateText() {
+  async function translateText () {
     const request = {
       parent: translationClient.locationPath(projectId, location),
       contents: [text],
@@ -137,10 +137,11 @@ app.post('/v1/api/calendar/create', cors(corsOptions), (req, res) => {
   const maintId = req.body.maintId
   const startDateTime = req.body.startDateTime
   const endDateTime = req.body.endDateTime
+  const user = req.body.user
 
   var event = {
     summary: `NT-${maintId} - Maintenance ${company} CID ${cids}`,
-    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.de/maintenance?id=${maintId}">NT-${maintId}</a>`,
+    description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.de/maintenance?id=${maintId}">NT-${maintId}</a><br />Created By: ${user}`,
     start: {
       dateTime: startDateTime,
       timeZone: 'Europe/Berlin'
@@ -227,7 +228,7 @@ app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
   })
 })
 
-function getIndividualMessageDetails(messageId, auth, gmail) {
+function getIndividualMessageDetails (messageId, auth, gmail) {
   return new Promise((resolve, reject) => {
     gmail.users.messages.get({
       auth: auth,
@@ -243,7 +244,7 @@ function getIndividualMessageDetails(messageId, auth, gmail) {
   })
 }
 
-function getHeader(headers, name) {
+function getHeader (headers, name) {
   let returnValue = ''
   headers.forEach(header => {
     if (header.name === name) {
@@ -254,7 +255,7 @@ function getHeader(headers, name) {
 }
 
 app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
-  function getMessageDetails(messages, auth) {
+  function getMessageDetails (messages, auth) {
     const gmail = google.gmail({
       version: 'v1'
     })
@@ -362,10 +363,10 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
   const gmail = google.gmail({
     version: 'v1'
   })
-  function base64EncodeBody(body) {
+  function base64EncodeBody (body) {
     return base64js.fromByteArray(new Uint8Array(encodeUtf8(body))).match(/.{1,76}/g).join('\r\n') + '\r\n'
   }
-  function sendMessage(userId, email, callback) {
+  function sendMessage (userId, email, callback) {
     var base64EncodedEmail = Base64.encodeURI(email)
     var request = gmail.users.messages.send({
       auth: userId,

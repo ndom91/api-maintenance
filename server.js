@@ -78,7 +78,7 @@ app.post('/v1/api/translate', cors(corsOptions), (req, res) => {
   const projectId = 'maintenanceapp-221917'
   const location = 'global'
 
-  async function translateText () {
+  async function translateText() {
     const request = {
       parent: translationClient.locationPath(projectId, location),
       contents: [text],
@@ -257,7 +257,7 @@ app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
   )
 })
 
-function getIndividualMessageDetails (messageId, auth, gmail) {
+function getIndividualMessageDetails(messageId, auth, gmail) {
   return new Promise((resolve, reject) => {
     gmail.users.messages.get(
       {
@@ -276,7 +276,7 @@ function getIndividualMessageDetails (messageId, auth, gmail) {
   })
 }
 
-function getHeader (headers, name) {
+function getHeader(headers, name) {
   let returnValue = ''
   headers.forEach((header) => {
     if (header.name === name) {
@@ -287,7 +287,7 @@ function getHeader (headers, name) {
 }
 
 app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
-  function getMessageDetails (messages, auth) {
+  function getMessageDetails(messages, auth) {
     const gmail = google.gmail({
       version: 'v1'
     })
@@ -405,7 +405,7 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
   const gmail = google.gmail({
     version: 'v1'
   })
-  function base64EncodeBody (body) {
+  function base64EncodeBody(body) {
     return (
       base64js
         .fromByteArray(new Uint8Array(encodeUtf8(body)))
@@ -413,7 +413,7 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
         .join('\r\n') + '\r\n'
     )
   }
-  function sendMessage (userId, email, callback) {
+  function sendMessage(userId, email, callback) {
     var base64EncodedEmail = Base64.encodeURI(email)
     var request = gmail.users.messages.send({
       auth: userId,
@@ -595,6 +595,11 @@ const domainSwitch = async (domain) => {
           break
         case 'level3.com':
           data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
+          resolve(data)
+          break
+        case 'newtelco.ge':
+          data =
+            'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
           resolve(data)
           break
         case '*newtelco*':

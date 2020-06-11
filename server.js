@@ -532,6 +532,8 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
 })
 
 app.get('/v1/api/search/update', cors(corsOptions), (req, res) => {
+  console.log(process.env)
+
   const connection = mysql.createConnection({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 3306,

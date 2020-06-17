@@ -1,11 +1,11 @@
 {
   "name": "api-maintenance",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Newtelco Maintenance API",
   "main": "index.js",
   "scripts": {
-    "dev": "GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "PORT=4101 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json node server.js",
+    "dev": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json nodemon server.js"
   },
   "author": "Nico Domino <ndomino@newtelco.de>",
   "license": "MIT",

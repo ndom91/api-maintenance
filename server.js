@@ -571,7 +571,6 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
 const domainSwitch = async (domain) => {
   return new Promise((resolve) => {
     if (domain) {
-      let data
       switch (domain) {
         case 'notify.digitalrealty.com':
           domain = 'digitalrealty.com'
@@ -590,66 +589,43 @@ const domainSwitch = async (domain) => {
             .catch((err) => console.error(err))
           break
         case 'centurylink.com':
-          data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
-          resolve(data)
+          resolve('https://avatars1.githubusercontent.com/u/5995824?s=400&v=4')
           break
         case 'level3.com':
-          data = 'https://avatars1.githubusercontent.com/u/5995824?s=400&v=4'
-          resolve(data)
+          resolve('https://avatars1.githubusercontent.com/u/5995824?s=400&v=4')
           break
         case 'newtelco.ge':
-          data =
-            'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
-          resolve(data)
+          resolve('https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png')
           break
         case '*newtelco*':
-          data =
-            'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
-          resolve(data)
+          resolve('https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png')
           break
         case 'teliacompany.com':
-          data =
-            'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
-          resolve(data)
+          resolve('https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png')
           break
         case 'hgc.com.hk':
-          data =
-            'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
-          resolve(data)
+          resolve('https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg')
           break
         case 'retn.net':
-          data =
-            'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
-          resolve(data)
+          resolve('https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png')
           break
         case 't.ht.hr':
-          data =
-            'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
-          resolve(data)
+          resolve('https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr')
           break
         case 'benestra.sk':
-          data =
-            'http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256'
-          resolve(data)
+          resolve('http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256')
           break
         case 'googlemail.com':
-          data = 'https://www.google.com/favicon.ico'
-          resolve(data)
+          resolve('https://www.google.com/favicon.ico')
           break
         case 'iptp.net':
-          data =
-            'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
-          resolve(data)
+          resolve('https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png')
           break
         case 'epsilontel.com':
-          data =
-            'https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226'
-          resolve(data)
+          resolve('https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226')
           break
         case 'avelacom.ru':
-          data =
-            'https://media-exp1.licdn.com/dms/image/C560BAQESKSHXXOpnAg/company-logo_200_200/0?e=2159024400&v=beta&t=1huhKyqy63BV_J7h8OiKCed06_Mlb4PRSK95eknXlws'
-          resolve(data)
+          resolve('https://media-exp1.licdn.com/dms/image/C560BAQESKSHXXOpnAg/company-logo_200_200/0?e=2159024400&v=beta&t=1huhKyqy63BV_J7h8OiKCed06_Mlb4PRSK95eknXlws')
           break
         default:
           fetchFavicon(`https://${domain}`)

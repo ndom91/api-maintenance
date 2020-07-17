@@ -1,6 +1,6 @@
 {
   "name": "api-maintenance",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Newtelco Maintenance API",
   "main": "index.js",
   "scripts": {

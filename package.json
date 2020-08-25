@@ -4,7 +4,7 @@
 	"description": "Newtelco Maintenance API",
 	"main": "index.js",
 	"scripts": {
-		"start": "PORT=4101 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json node server.js",
+		"start": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json node server.js",
 		"dev": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json nodemon server.js"
 	},
 	"author": "Nico Domino <ndomino@newtelco.de>",

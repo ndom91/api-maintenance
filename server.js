@@ -14,7 +14,7 @@ const bodyParser = require('body-parser')
 const timeout = require('connect-timeout')
 const mysql = require('mysql')
 const algoliasearch = require('algoliasearch')
-const { TranslationServiceClient } = require('@google-cloud/translate').v3beta1
+const { TranslationServiceClient } = require('@google-cloud/translate')
 const fetchFavicon = require('@meltwater/fetch-favicon').fetchFavicon
 const Sentry = require('@sentry/node')
 

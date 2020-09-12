@@ -27,7 +27,7 @@
 		"googleapis": "^59.0.0",
 		"js-base64": "^3.4.5",
 		"mysql": "github:mysqljs/mysql",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"sanitize-html-react": "^1.13.0"
 	},
 	"devDependencies": {

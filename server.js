@@ -20,7 +20,7 @@ const Sentry = require('@sentry/node')
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  release: 'newtelco/api-maintenance@' + process.env.npm_package_version
+  release: 'newtelco/api-maintenance@' + process.env.npm_package_version,
 })
 
 app.use(express.urlencoded({ extended: true }))
@@ -33,7 +33,7 @@ var whitelist = [
   'https://maintenance.newtelco.de',
   'https://maint.newtelco.de',
   'https://maint.newtelco.dev',
-  'https://maint.newtelco.online'
+  'https://maint.newtelco.online',
 ]
 // var whitelist = ['*']
 var corsOptions = {
@@ -43,7 +43,7 @@ var corsOptions = {
     } else {
       callback(new Error('Not allowed by CORS'))
     }
-  }
+  },
 }
 
 var jwtClient = new google.auth.JWT(
@@ -57,7 +57,7 @@ var jwtClient = new google.auth.JWT(
     'https://www.googleapis.com/auth/gmail.modify',
     'https://www.googleapis.com/auth/gmail.readonly',
     'https://www.googleapis.com/auth/gmail.labels',
-    'https://www.googleapis.com/auth/calendar'
+    'https://www.googleapis.com/auth/calendar',
   ],
   'fwaleska@newtelco.de'
 )
@@ -78,13 +78,13 @@ app.post('/v1/api/translate', cors(corsOptions), (req, res) => {
   const projectId = 'maintenanceapp-221917'
   const location = 'global'
 
-  async function translateText () {
+  async function translateText() {
     const request = {
       parent: translationClient.locationPath(projectId, location),
       contents: [text],
       mimeType: 'text/html',
       sourceLanguageCode: 'ru-RU',
-      targetLanguageCode: 'en-US'
+      targetLanguageCode: 'en-US',
     }
 
     const [response] = await translationClient.translateText(request)
@@ -99,7 +99,7 @@ app.post('/v1/api/translate', cors(corsOptions), (req, res) => {
 
 app.post('/v1/api/calendar/reschedule', cors(corsOptions), (req, res) => {
   var calendar = google.calendar({
-    version: 'v3'
+    version: 'v3',
   })
   const company = req.body.company
   const cids = req.body.cids
@@ -116,13 +116,13 @@ app.post('/v1/api/calendar/reschedule', cors(corsOptions), (req, res) => {
     description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.de/maintenance?id=${maintId}">NT-${maintId}-${rcounter}</a>`,
     start: {
       dateTime: startDateTime,
-      timeZone: 'Europe/Berlin'
+      timeZone: 'Europe/Berlin',
     },
     end: {
       dateTime: endDateTime,
-      timeZone: 'Europe/Berlin'
+      timeZone: 'Europe/Berlin',
     },
-    attendees: [{ email: 'service@newtelco.de' }]
+    attendees: [{ email: 'service@newtelco.de' }],
   }
 
   calendar.events.update(
@@ -131,7 +131,7 @@ app.post('/v1/api/calendar/reschedule', cors(corsOptions), (req, res) => {
       calendarId:
         'newtelco.de_hkp98ambbvctcn966gjj3c7dlo@group.calendar.google.com',
       eventId: calId,
-      resource: event
+      resource: event,
     },
     function (err, event) {
       if (err) {
@@ -145,7 +145,7 @@ app.post('/v1/api/calendar/reschedule', cors(corsOptions), (req, res) => {
 
 app.post('/v1/api/calendar/create', cors(corsOptions), (req, res) => {
   var calendar = google.calendar({
-    version: 'v3'
+    version: 'v3',
   })
   const company = req.body.company
   const cids = req.body.cids
@@ -160,20 +160,20 @@ app.post('/v1/api/calendar/create', cors(corsOptions), (req, res) => {
     description: ` Maintenance for <b>${company}</b> on deren CID: "<b>${supplierCID}</b>".<br><br> Affected Newtelco CIDs: <b>${cids}</b><br><br>Source: <a href="https://maintenance.newtelco.de/maintenance?id=${maintId}">NT-${maintId}</a><br />Created By: ${user}`,
     start: {
       dateTime: startDateTime,
-      timeZone: 'Europe/Berlin'
+      timeZone: 'Europe/Berlin',
     },
     end: {
       dateTime: endDateTime,
-      timeZone: 'Europe/Berlin'
+      timeZone: 'Europe/Berlin',
     },
-    attendees: [{ email: 'service@newtelco.de' }]
+    attendees: [{ email: 'service@newtelco.de' }],
   }
   calendar.events.insert(
     {
       auth: jwtClient,
       calendarId:
         'newtelco.de_hkp98ambbvctcn966gjj3c7dlo@group.calendar.google.com',
-      resource: event
+      resource: event,
     },
     function (err, event) {
       if (err) {
@@ -184,7 +184,7 @@ app.post('/v1/api/calendar/create', cors(corsOptions), (req, res) => {
         statusText: 'OK',
         status: 200,
         id: event.data.id,
-        event: event
+        event: event,
       })
     }
   )
@@ -193,7 +193,7 @@ app.post('/v1/api/calendar/create', cors(corsOptions), (req, res) => {
 app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
   var gmail = google.gmail({
     version: 'v1',
-    auth: jwtClient
+    auth: jwtClient,
   })
   const mailId = req.body.m
   gmail.users.messages.modify(
@@ -202,20 +202,20 @@ app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
       id: mailId,
       requestBody: {
         addLabelIds: ['Label_2533604283317145521'],
-        removeLabelIds: ['Label_2565420896079443395']
-      }
+        removeLabelIds: ['Label_2565420896079443395'],
+      },
     },
     function (err, response) {
       if (err) {
         res.json({
           id: 500,
-          status: `Gmail API Error - ${err}`
+          status: `Gmail API Error - ${err}`,
         })
       }
       if (response.status === 200) {
         res.json({
           status: 'complete',
-          id: response.data.id
+          id: response.data.id,
         })
       }
     }
@@ -229,7 +229,7 @@ app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
   // })
   var gmail = google.gmail({
     version: 'v1',
-    auth: jwtClient
+    auth: jwtClient,
   })
   const mailId = req.body.m
   gmail.users.messages.modify(
@@ -237,34 +237,34 @@ app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
       userId: 'fwaleska@newtelco.de',
       id: mailId,
       requestBody: {
-        removeLabelIds: ['UNREAD']
-      }
+        removeLabelIds: ['UNREAD'],
+      },
     },
     function (err, response) {
       if (err) {
         res.json({
           id: 500,
-          status: `Gmail API Error - ${err}`
+          status: `Gmail API Error - ${err}`,
         })
       }
       if (response.status === 200) {
         res.json({
           status: 'complete',
-          id: response.data.id
+          id: response.data.id,
         })
       }
     }
   )
 })
 
-function getIndividualMessageDetails (messageId, auth, gmail) {
+function getIndividualMessageDetails(messageId, auth, gmail) {
   return new Promise((resolve, reject) => {
     gmail.users.messages.get(
       {
         auth: auth,
         userId: 'fwaleska@newtelco.de',
         id: messageId,
-        format: 'full'
+        format: 'full',
       },
       function (err, response) {
         if (err) {
@@ -276,9 +276,9 @@ function getIndividualMessageDetails (messageId, auth, gmail) {
   })
 }
 
-function getHeader (headers, name) {
+function getHeader(headers, name) {
   let returnValue = ''
-  headers.forEach((header) => {
+  headers.forEach(header => {
     if (header.name === name) {
       returnValue = header.value
     }
@@ -287,9 +287,9 @@ function getHeader (headers, name) {
 }
 
 app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
-  function getMessageDetails (messages, auth) {
+  function getMessageDetails(messages, auth) {
     const gmail = google.gmail({
-      version: 'v1'
+      version: 'v1',
     })
     const answer = []
     return new Promise((resolve, reject) => {
@@ -297,7 +297,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
         const promise = getIndividualMessageDetails(newMessage.id, auth, gmail)
         answer.push(promise)
       }
-      Promise.all(answer).then((results) => {
+      Promise.all(answer).then(results => {
         resolve(results)
       })
     })
@@ -309,7 +309,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
       // maxResults: 5,
       q: 'IS:UNREAD',
       labelIds: ['Label_2565420896079443395'],
-      userId: 'fwaleska@newtelco.de'
+      userId: 'fwaleska@newtelco.de',
     },
     function (err, response) {
       if (err) {
@@ -324,17 +324,14 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
 
       const answer = getMessageDetails(messages, jwtClient)
       answer
-        .then((v) => {
+        .then(v => {
           const finalResponse = []
-          v.forEach((message) => {
+          v.forEach(message => {
             const id = message.data.id
             const historyId = message.data.historyId
             const snippet = message.data.snippet
             if (message.data.payload) {
-              const subject = getHeader(
-                message.data.payload.headers,
-                'Subject'
-              )
+              const subject = getHeader(message.data.payload.headers, 'Subject')
               const from = getHeader(message.data.payload.headers, 'From')
               const to = getHeader(message.data.payload.headers, 'To')
               const date = getHeader(message.data.payload.headers, 'Date')
@@ -362,19 +359,19 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
                 to: to,
                 date: date,
                 body: sanitizeHtml(body),
-                faviconUrl: `https://maint.newtelco.dev/v1/api/faviconUrl?d=${domain}`
+                faviconUrl: `https://maint.newtelco.dev/v1/api/faviconUrl?d=${domain}`,
               })
             } else {
               finalResponse.push({
                 id: id,
                 snippet: snippet,
-                historyID: historyId
+                historyID: historyId,
               })
             }
           })
           res.json(finalResponse)
         })
-        .catch((err) => {
+        .catch(err => {
           console.error(`API Error - ${err}`)
           res.json({ status: err })
         })
@@ -388,7 +385,7 @@ app.get('/v1/api/count', cors(corsOptions), (req, res) => {
       auth: jwtClient,
       q: 'IS:UNREAD',
       labelIds: ['Label_2565420896079443395'],
-      userId: 'fwaleska@newtelco.de'
+      userId: 'fwaleska@newtelco.de',
     },
     function (err, response) {
       if (err) {
@@ -403,9 +400,9 @@ app.get('/v1/api/count', cors(corsOptions), (req, res) => {
 
 app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
   const gmail = google.gmail({
-    version: 'v1'
+    version: 'v1',
   })
-  function base64EncodeBody (body) {
+  function base64EncodeBody(body) {
     return (
       base64js
         .fromByteArray(new Uint8Array(encodeUtf8(body)))
@@ -413,22 +410,22 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
         .join('\r\n') + '\r\n'
     )
   }
-  function sendMessage (userId, email, callback) {
+  function sendMessage(userId, email, callback) {
     var base64EncodedEmail = Base64.encodeURI(email)
     var request = gmail.users.messages.send({
       auth: userId,
       userId: 'fwaleska@newtelco.de',
       resource: {
-        raw: base64EncodedEmail
-      }
+        raw: base64EncodedEmail,
+      },
     })
     request
-      .then((data) => {
+      .then(data => {
         callback(data)
       })
-      .catch((err) => console.error(err))
+      .catch(err => console.error(err))
   }
-  const respond = (data) => {
+  const respond = data => {
     res.json({ response: data })
   }
   const body = `<html>${req.body.body}</html>`
@@ -454,13 +451,13 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
 app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
   const mailId = req.params.mailId
   const gmail = google.gmail({
-    version: 'v1'
+    version: 'v1',
   })
 
   const attachmentsToSend = []
 
   const promise = getIndividualMessageDetails(mailId, jwtClient, gmail)
-  promise.then((message) => {
+  promise.then(message => {
     const parsedMessage = parseMessage(message.data)
     const textHtml = parsedMessage.textHtml
     const textPlain = parsedMessage.textPlain
@@ -471,7 +468,7 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
           id: id,
           name: filename,
           mime: mimeType,
-          data: attachmentData
+          data: attachmentData,
         })
         if (id === 0) {
           const body = textHtml || textPlain
@@ -484,11 +481,11 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
               subject: subject,
               from: from,
               date: date,
-              attachments: attachmentsToSend
+              attachments: attachmentsToSend,
             })
           } else {
             return res.send({
-              body: body
+              body: body,
             })
           }
         }
@@ -498,9 +495,9 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
           id: attachments[i].attachmentId,
           messageId: mailId,
           auth: jwtClient,
-          userId: 'fwaleska@newtelco.de'
+          userId: 'fwaleska@newtelco.de',
         })
-        request.then((attachmentData) => {
+        request.then(attachmentData => {
           gatherAttachments(
             i,
             attachments[i].filename,
@@ -520,11 +517,11 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
           subject: subject,
           from: from,
           date: date,
-          attachments: attachmentsToSend
+          attachments: attachmentsToSend,
         })
       } else {
         return res.send({
-          body: body
+          body: body,
         })
       }
     }
@@ -537,7 +534,7 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
     port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
   })
 
   const maintId = req.body.maintId
@@ -568,25 +565,25 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
   )
 })
 
-const domainSwitch = async (domain) => {
-  return new Promise((resolve) => {
+const domainSwitch = async domain => {
+  return new Promise(resolve => {
     if (domain) {
       switch (domain) {
         case 'notify.digitalrealty.com':
           domain = 'digitalrealty.com'
           fetchFavicon(`https://${domain}`)
-            .then((data) => {
+            .then(data => {
               resolve(data)
             })
-            .catch((err) => console.error(err))
+            .catch(err => console.error(err))
           break
         case 'zayo.com':
           domain = 'investors.zayo.com'
           fetchFavicon(`https://${domain}`)
-            .then((data) => {
+            .then(data => {
               resolve(data)
             })
-            .catch((err) => console.error(err))
+            .catch(err => console.error(err))
           break
         case 'centurylink.com':
           resolve('https://avatars1.githubusercontent.com/u/5995824?s=400&v=4')
@@ -595,44 +592,64 @@ const domainSwitch = async (domain) => {
           resolve('https://avatars1.githubusercontent.com/u/5995824?s=400&v=4')
           break
         case 'newtelco.ge':
-          resolve('https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png')
+          resolve(
+            'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+          )
           break
         case '*newtelco*':
-          resolve('https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png')
+          resolve(
+            'https://newtelco.com/wp-content/uploads/2018/11/cropped-nt_logo_64-150x150.png'
+          )
           break
         case 'teliacompany.com':
-          resolve('https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png')
+          resolve(
+            'https://seeklogo.com/images/S/sonera-logo-4C6F5A629C-seeklogo.com.png'
+          )
           break
         case 'hgc.com.hk':
-          resolve('https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg')
+          resolve(
+            'https://yt3.ggpht.com/-0upMoKN-6yc/AAAAAAAAAAI/AAAAAAAAAAA/25-1fqH4MXc/s68-c-k-no-mo-rj-c0xffffff/photo.jpg'
+          )
           break
         case 'retn.net':
-          resolve('https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png')
+          resolve(
+            'https://retn.net/wp-content/uploads/2018/09/apple-icon-114x114.png'
+          )
           break
         case 't.ht.hr':
-          resolve('https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr')
+          resolve(
+            'https://halberdbastion.com/sites/default/files/styles/medium/public/2017-12/T-Mobile-Croatia-Logo.png?itok=QmBK8Vyr'
+          )
           break
         case 'benestra.sk':
-          resolve('http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256')
+          resolve(
+            'http://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/BENESTRA-logo.svg/1280px-BENESTRA-logo.svg.png&w=256'
+          )
           break
         case 'googlemail.com':
           resolve('https://www.google.com/favicon.ico')
           break
         case 'iptp.net':
-          resolve('https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png')
+          resolve(
+            'https://pbs.twimg.com/profile_images/478475215098220544/xWKT_ZkH_400x400.png'
+          )
           break
         case 'epsilontel.com':
-          resolve('https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226')
+          resolve(
+            'https://images.weserv.nl/?url=https://www.epsilontel.com/wp-content/uploads/2018/03/EpsilonLogo.jpg&cx=550&cy=185&cw=229&ch=226'
+          )
           break
         case 'avelacom.ru':
-          resolve('https://media-exp1.licdn.com/dms/image/C560BAQESKSHXXOpnAg/company-logo_200_200/0?e=2159024400&v=beta&t=1huhKyqy63BV_J7h8OiKCed06_Mlb4PRSK95eknXlws')
+          resolve(
+            'https://media-exp1.licdn.com/dms/image/C560BAQESKSHXXOpnAg/company-logo_200_200/0?e=2159024400&v=beta&t=1huhKyqy63BV_J7h8OiKCed06_Mlb4PRSK95eknXlws'
+          )
           break
         default:
           fetchFavicon(`https://${domain}`)
-            .then((data) => {
+            .then(data => {
               resolve(data)
             })
-            .catch((err) => {
+            .catch(err => {
               resolve(
                 'https://maint.newtelco.dev/static/images/office-building.png'
               )
@@ -646,14 +663,14 @@ const domainSwitch = async (domain) => {
 
 app.get('/v1/api/faviconUrl', timeout('5s'), cors(corsOptions), (req, res) => {
   const domain = req.query.d
-  domainSwitch(domain).then((Url) => {
+  domainSwitch(domain).then(Url => {
     res.redirect(Url)
   })
 })
 
 app.get('/v1/api/favicon', timeout('5s'), cors(corsOptions), (req, res) => {
   const domain = req.query.d
-  domainSwitch(domain).then((Url) => {
+  domainSwitch(domain).then(Url => {
     res.json({ icons: Url })
   })
 })

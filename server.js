@@ -555,7 +555,7 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
       )
       const index = client.initIndex(process.env.ALGOLIA_INDEX)
 
-      index.addObjects([results[0]], (err, content) => {
+      index.saveObjects([results[0]], (err, content) => {
         if (err) {
           console.error(err)
           res.json({ id: maintId, error: err })

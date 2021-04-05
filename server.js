@@ -552,14 +552,13 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
       )
       const index = client.initIndex(process.env.ALGOLIA_INDEX)
 
-      index.saveObjects([results[0]], (err, content) => {
-        if (err) {
-          console.error(err)
-          res.json({ id: maintId, error: err })
-        } else {
-          res.json({ id: maintId, error: false })
-        }
-      })
+      index
+        .saveObjects([results[0]], {
+          autoGenerateObjectIDIfNotExist: true,
+        })
+        .then(({ objectIds }) => {
+          res.json({ id: maintId, algoliaIds: objectIds, error: false })
+        })
       connection.end()
     }
   )
@@ -661,14 +660,14 @@ const domainSwitch = async domain => {
   })
 }
 
-app.get('/v1/api/faviconUrl', timeout('5s'), cors(corsOptions), (req, res) => {
+app.get('/v1/api/faviconUrl', timeout('3s'), cors(corsOptions), (req, res) => {
   const domain = req.query.d
   domainSwitch(domain).then(Url => {
     res.redirect(Url)
   })
 })
 
-app.get('/v1/api/favicon', timeout('5s'), cors(corsOptions), (req, res) => {
+app.get('/v1/api/favicon', timeout('3s'), cors(corsOptions), (req, res) => {
   const domain = req.query.d
   domainSwitch(domain).then(Url => {
     res.json({ icons: Url })

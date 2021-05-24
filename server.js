@@ -660,19 +660,32 @@ const domainSwitch = async domain => {
   })
 }
 
-app.get('/v1/api/faviconUrl', timeout('3s'), cors(corsOptions), (req, res) => {
-  const domain = req.query.d
-  domainSwitch(domain).then(Url => {
-    res.redirect(Url)
-  })
-})
+app.get(
+  '/v1/api/faviconUrl',
+  timeout('3s'),
+  cors(corsOptions),
+  async (req, res) => {
+    // const domain = req.query.d
+    const url = await domainSwitch(req.query.d)
+    // .then(url => {
+    res.status(300).redirect(url)
+    // })
+  }
+)
 
-app.get('/v1/api/favicon', timeout('3s'), cors(corsOptions), (req, res) => {
-  const domain = req.query.d
-  domainSwitch(domain).then(Url => {
-    res.json({ icons: Url })
-  })
-})
+app.get(
+  '/v1/api/favicon',
+  timeout('3s'),
+  cors(corsOptions),
+  async (req, res) => {
+    // const domain = req.query.d
+    // domainSwitch(domain).then(url => {
+    //   res.status(200).json({ icons: url })
+    // })
+    const url = await domainSwitch(req.query.d)
+    res.status(200).json({ icons: url })
+  }
+)
 
 app.listen(4100, () => {
   console.log('Server is listening on port 4100')

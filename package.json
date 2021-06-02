@@ -1,67 +1,93 @@
 {
-	"name": "api-maintenance",
-	"version": "2.1.0",
-	"description": "Newtelco Maintenance API",
-	"main": "index.js",
-	"scripts": {
-		"start": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json node server.js",
-		"dev": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json nodemon server.js"
-	},
-	"author": "Nico Domino <ndomino@newtelco.de>",
-	"license": "MIT",
-	"dependencies": {
-		"@google-cloud/translate": "^6.1.0",
-		"@meltwater/fetch-favicon": "^1.0.4",
-		"@sentry/node": "^6.2.0",
-		"algoliasearch": "^4.8.5",
-		"base64-js": "^1.5.1",
-		"body-parser": "^1.19.0",
-		"connect-timeout": "^1.9.0",
-		"cors": "^2.8.5",
-		"dotenv": "^8.2.0",
-		"encode-utf8": "^1.0.3",
-		"express": "^4.17.1",
-		"gmail-api-parse-message": "^2.1.2",
-		"google-batch": "0.0.8",
-		"google-oauth-jwt": "^0.2.0",
-		"googleapis": "^67.1.0",
-		"js-base64": "^3.6.0",
-		"mysql": "github:mysqljs/mysql",
-		"node-fetch": "^2.6.1",
-		"sanitize-html-react": "^1.13.0"
-	},
-	"devDependencies": {
-		"@commitlint/cli": "^11.0.0",
-		"@commitlint/config-conventional": "^11.0.0",
-		"eslint": "^7.20.0",
-		"husky": "^5.0.9",
-		"lint-staged": "^10.5.4",
-		"nodemon": "^2.0.7",
-		"prettier": "^2.2.1"
-	},
-	"prettier": {
-		"singleQuote": true,
-		"trailingComma": "es5",
-		"semi": false,
-		"jsxSingleQuote": true,
-		"arrowParens": "avoid",
-		"tabWidth": 2,
-		"useTabs": false
-	},
-	"husky": {
-		"hooks": {
-			"commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-			"pre-commit": "lint-staged"
-		}
-	},
-	"lint-staged": {
-		"*.{js,jsx,json}": [
-			"npm run prettier:fix"
-		]
-	},
-	"commitlint": {
-		"extends": [
-			"@commitlint/config-conventional"
-		]
-	}
+  "name": "api-maintenance",
+  "version": "2.1.0",
+  "description": "Newtelco Maintenance API",
+  "main": "index.js",
+  "scripts": {
+    "start": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json node server.js",
+    "dev": "PORT=4100 GOOGLE_APPLICATION_CREDENTIALS=serviceacct.json nodemon server.js"
+  },
+  "author": "Nico Domino <ndomino@newtelco.de>",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/translate": "^6.1.0",
+    "@meltwater/fetch-favicon": "^1.0.4",
+    "@sentry/node": "^6.2.0",
+    "algoliasearch": "^4.8.5",
+    "base64-js": "^1.5.1",
+    "body-parser": "^1.19.0",
+    "connect-timeout": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "encode-utf8": "^1.0.3",
+    "express": "^4.17.1",
+    "gmail-api-parse-message": "^2.1.2",
+    "google-batch": "0.0.8",
+    "google-oauth-jwt": "^0.2.0",
+    "googleapis": "^67.1.0",
+    "js-base64": "^3.6.0",
+    "mysql": "github:mysqljs/mysql",
+    "node-fetch": "^2.6.1",
+    "sanitize-html-react": "^1.13.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "eslint": "^7.20.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^5.0.9",
+    "lint-staged": "^10.5.4",
+    "nodemon": "^2.0.7",
+    "prettier": "^2.3.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": false,
+    "arrowParens": "avoid"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "node_modules/*",
+      ".next/*",
+      ".out/*",
+      "!.prettierrc.js"
+    ],
+    "root": true,
+    "env": {
+      "node": true,
+      "es6": true
+    },
+    "rules": {
+      "no-unused-vars": 2,
+      "no-undef": 2
+    },
+    "extends": [
+      "plugin:prettier/recommended",
+      "eslint:recommended"
+    ],
+    "plugins": [
+      "prettier"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,json}": [
+      "npm run prettier:fix"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  }
 }

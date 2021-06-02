@@ -28,15 +28,15 @@ app.use(bodyParser.json())
 app.use(express.json())
 app.use(cors())
 
-var whitelist = [
+const whitelist = [
   'https://maintenance.newtelco.dev',
   'https://maintenance.newtelco.de',
   'https://maint.newtelco.de',
   'https://maint.newtelco.dev',
   'https://maint.newtelco.online',
 ]
-// var whitelist = ['*']
-var corsOptions = {
+
+const corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true)
@@ -46,7 +46,7 @@ var corsOptions = {
   },
 }
 
-var jwtClient = new google.auth.JWT(
+const jwtClient = new google.auth.JWT(
   key.client_email,
   null,
   key.private_key,
@@ -59,10 +59,10 @@ var jwtClient = new google.auth.JWT(
     'https://www.googleapis.com/auth/gmail.labels',
     'https://www.googleapis.com/auth/calendar',
   ],
-  'fwaleska@newtelco.de'
+  'maintenance@newtelco.de'
 )
 
-jwtClient.authorize(function (err, tokens) {
+jwtClient.authorize(err => {
   if (err) {
     console.error(err)
   }
@@ -133,7 +133,7 @@ app.post('/v1/api/calendar/reschedule', cors(corsOptions), (req, res) => {
       eventId: calId,
       resource: event,
     },
-    function (err, event) {
+    function (err) {
       if (err) {
         res.json({ statusText: 'failed', error: err })
         return
@@ -198,11 +198,11 @@ app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
   const mailId = req.body.m
   gmail.users.messages.modify(
     {
-      userId: 'fwaleska@newtelco.de',
+      userId: 'maintenance@newtelco.de',
       id: mailId,
       requestBody: {
-        addLabelIds: ['Label_2533604283317145521'],
-        removeLabelIds: ['Label_2565420896079443395'],
+        addLabelIds: ['Label_5942042757335280247'],
+        removeLabelIds: ['Label_5952219119704143793'],
       },
     },
     function (err, response) {
@@ -223,18 +223,14 @@ app.post('/v1/api/inbox/markcomplete', cors(corsOptions), (req, res) => {
 })
 
 app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
-  // res.json({
-  //   status: 'complete',
-  //   id: req.body.m
-  // })
-  var gmail = google.gmail({
+  const gmail = google.gmail({
     version: 'v1',
     auth: jwtClient,
   })
   const mailId = req.body.m
   gmail.users.messages.modify(
     {
-      userId: 'fwaleska@newtelco.de',
+      userId: 'maintenance@newtelco.de',
       id: mailId,
       requestBody: {
         removeLabelIds: ['UNREAD'],
@@ -258,11 +254,11 @@ app.post('/v1/api/inbox/delete', cors(corsOptions), (req, res) => {
 })
 
 function getIndividualMessageDetails(messageId, auth, gmail) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     gmail.users.messages.get(
       {
         auth: auth,
-        userId: 'fwaleska@newtelco.de',
+        userId: 'maintenance@newtelco.de',
         id: messageId,
         format: 'full',
       },
@@ -292,7 +288,7 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
       version: 'v1',
     })
     const answer = []
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       for (const newMessage of messages) {
         const promise = getIndividualMessageDetails(newMessage.id, auth, gmail)
         answer.push(promise)
@@ -306,10 +302,9 @@ app.get('/v1/api/inbox', cors(corsOptions), (req, res) => {
   gmail.users.messages.list(
     {
       auth: jwtClient,
-      // maxResults: 5,
       q: 'IS:UNREAD',
-      labelIds: ['Label_2565420896079443395'],
-      userId: 'fwaleska@newtelco.de',
+      labelIds: ['Label_5952219119704143793'],
+      userId: 'maintenance@newtelco.de',
     },
     function (err, response) {
       if (err) {
@@ -384,8 +379,8 @@ app.get('/v1/api/count', cors(corsOptions), (req, res) => {
     {
       auth: jwtClient,
       q: 'IS:UNREAD',
-      labelIds: ['Label_2565420896079443395'],
-      userId: 'fwaleska@newtelco.de',
+      labelIds: ['Label_5952219119704143793'],
+      userId: 'maintenance@newtelco.de',
     },
     function (err, response) {
       if (err) {
@@ -414,7 +409,7 @@ app.post('/v1/api/mail/send', cors(corsOptions), (req, res) => {
     var base64EncodedEmail = Base64.encodeURI(email)
     var request = gmail.users.messages.send({
       auth: userId,
-      userId: 'fwaleska@newtelco.de',
+      userId: 'maintenance@newtelco.de',
       resource: {
         raw: base64EncodedEmail,
       },
@@ -458,6 +453,12 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
 
   const promise = getIndividualMessageDetails(mailId, jwtClient, gmail)
   promise.then(message => {
+    if (message === 'API Error - Error: Requested entity was not found.') {
+      return res.send({
+        from: 'Unknown',
+        body: 'Message not found.',
+      })
+    }
     const parsedMessage = parseMessage(message.data)
     const textHtml = parsedMessage.textHtml
     const textPlain = parsedMessage.textPlain
@@ -495,7 +496,7 @@ app.get('/v1/api/mail/:mailId', cors(corsOptions), (req, res) => {
           id: attachments[i].attachmentId,
           messageId: mailId,
           auth: jwtClient,
-          userId: 'fwaleska@newtelco.de',
+          userId: 'maintenance@newtelco.de',
         })
         request.then(attachmentData => {
           gatherAttachments(
@@ -543,7 +544,7 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
 
   connection.query(
     `SELECT maintenancedb.id, maintenancedb.maileingang, maintenancedb.senderMaintenanceId, maintenancedb.lieferant, maintenancedb.receivedmail, maintenancedb.timezone, maintenancedb.timezoneLabel, companies.name, maintenancedb.derenCIDid, lieferantCID.derenCID, maintenancedb.bearbeitetvon, maintenancedb.betroffeneKunden, DATE_FORMAT(maintenancedb.startDateTime, "%Y-%m-%d %H:%i:%S") as startDateTime, DATE_FORMAT(maintenancedb.endDateTime, "%Y-%m-%d %H:%i:%S") as endDateTime, maintenancedb.postponed, maintenancedb.notes, maintenancedb.mailSentAt, maintenancedb.updatedAt, maintenancedb.betroffeneCIDs, maintenancedb.done, maintenancedb.cancelled, companies.mailDomain, maintenancedb.emergency, maintenancedb.reason, maintenancedb.impact, maintenancedb.location FROM maintenancedb LEFT JOIN lieferantCID ON maintenancedb.derenCIDid = lieferantCID.id LEFT JOIN companies ON maintenancedb.lieferant = companies.id WHERE maintenancedb.id = ${maintId}`,
-    function (error, results, fields) {
+    function (error, results) {
       // add to algolia search index when new maintenance is created
       if (error) console.error(error)
       const client = algoliasearch(
@@ -552,14 +553,13 @@ app.post('/v1/api/search/update', cors(corsOptions), (req, res) => {
       )
       const index = client.initIndex(process.env.ALGOLIA_INDEX)
 
-      index.saveObjects([results[0]], (err, content) => {
-        if (err) {
-          console.error(err)
-          res.json({ id: maintId, error: err })
-        } else {
-          res.json({ id: maintId, error: false })
-        }
-      })
+      index
+        .saveObjects([results[0]], {
+          autoGenerateObjectIDIfNotExist: true,
+        })
+        .then(data => {
+          res.json({ id: maintId, data })
+        })
       connection.end()
     }
   )
